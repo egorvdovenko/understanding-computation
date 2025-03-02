@@ -2,9 +2,15 @@
   "name": "understanding-computation",
   "version": "1.0.0",
   "scripts": {
-    "tsc": "npx tsc"
+    "tsc": "npx tsc",
+    "lint": "eslint **/*.ts",
+    "lint:fix": "eslint **/*.ts --fix"
   },
   "devDependencies": {
-    "typescript": "^5.7.3"
+    "@eslint/js": "^9.21.0",
+    "eslint": "^9.21.0",
+    "globals": "^16.0.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.25.0"
   }
 }
