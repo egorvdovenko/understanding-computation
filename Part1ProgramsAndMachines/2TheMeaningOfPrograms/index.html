@@ -8,8 +8,21 @@
 <body>
   <h1>Chapter 2. The Meaning of Programs</h1>
   <h2>Small-Step Semantics</h2>
-  <button onclick="runMachine(numericExpression)">runMachine(numericExpression)</button>
-  <button onclick="runMachine(booleanExpression)">runMachine(booleanExpression)</button>
+  <div style="margin-bottom: 4px;">
+    <button onclick="runMachine(numericExpression, environment)">
+      runMachine(numericExpression)
+    </button>
+  </div>
+  <div style="margin-bottom: 4px;">
+    <button onclick="runMachine(booleanExpression, environment)">
+      runMachine(booleanExpression)
+    </button>
+  </div>
+  <div style="margin-bottom: 4px;">
+    <button onclick="runMachine(variableExpression, environment)">
+      runMachine(variableExpression)
+    </button>
+  </div>
   <script src="SmallStepSemantics.js"></script>
 </body>
 </html>

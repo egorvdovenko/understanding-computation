@@ -2,7 +2,7 @@
   "name": "understanding-computation",
   "version": "1.0.0",
   "scripts": {
-    "tsc": "npx tsc",
+    "test": "vitest",
     "lint": "eslint **/*.ts",
     "lint:fix": "eslint **/*.ts --fix"
   },
@@ -11,6 +11,7 @@
     "eslint": "^9.21.0",
     "globals": "^16.0.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.25.0"
+    "typescript-eslint": "^8.25.0",
+    "vitest": "^3.0.7"
   }
 }

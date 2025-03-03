@@ -1,8 +1,9 @@
-abstract class SReducible {
-  abstract reduce(): SExpression;
-}
+type SExpression = SNumber | SBoolean | SAdd | SMultiply | SLessThan | SVariable;
+type SEnvironment = Record<string, SExpression>;
 
-type SExpression = SNumber | SBoolean | SAdd | SMultiply | SLessThan;
+abstract class SReducible {
+  abstract reduce(environment: SEnvironment): SExpression;
+}
 
 /**
  * Represents a simple number in the small-step semantics.
@@ -76,7 +77,7 @@ class SBoolean {
  * const add = new SAdd(new SNumber(5), new SNumber(5));
  * console.log(add.toString()); // "5 + 5"
  * console.log(add.reducible); // true
- * console.log(add.reduce()); // SNumber { value: 10 }
+ * console.log(add.reduce({})); // SNumber { value: 10 }
  */
 class SAdd extends SReducible {
   constructor(left: SExpression, right: SExpression) {
@@ -97,11 +98,11 @@ class SAdd extends SReducible {
     return true;
   }
 
-  public reduce() {
+  public reduce(environment: SEnvironment) {
     if (this.left.reducible) {
-      return new SAdd((this.left as SReducible).reduce(), this.right);
+      return new SAdd((this.left as SReducible).reduce(environment), this.right);
     } else if (this.right.reducible) {
-      return new SAdd(this.left, (this.right as SReducible).reduce());
+      return new SAdd(this.left, (this.right as SReducible).reduce(environment));
     } else {
       return new SNumber((this.left as SNumber).value + (this.right as SNumber).value);
     }
@@ -122,7 +123,7 @@ class SAdd extends SReducible {
  * const multiply = new SMultiply(new SNumber(5), new SNumber(5));
  * console.log(multiply.toString()); // "5 * 5"
  * console.log(multiply.reducible); // true
- * console.log(multiply.reduce()); // SNumber { value: 25 }
+ * console.log(multiply.reduce({})); // SNumber { value: 25 }
  */
 class SMultiply extends SReducible {
   constructor(left: SExpression, right: SExpression) {
@@ -143,11 +144,11 @@ class SMultiply extends SReducible {
     return true;
   }
 
-  public reduce() {
+  public reduce(environment: SEnvironment) {
     if (this.left.reducible) {
-      return new SMultiply((this.left as SReducible).reduce(), this.right);
+      return new SMultiply((this.left as SReducible).reduce(environment), this.right);
     } else if (this.right.reducible) {
-      return new SMultiply(this.left, (this.right as SReducible).reduce());
+      return new SMultiply(this.left, (this.right as SReducible).reduce(environment));
     } else {
       return new SNumber((this.left as SNumber).value * (this.right as SNumber).value);
     }
@@ -168,7 +169,7 @@ class SMultiply extends SReducible {
  * const lessThan = new SLessThan(new SNumber(4), new SNumber(5));
  * console.log(lessThan.toString()); // "4 < 5"
  * console.log(lessThan.reducible); // true
- * console.log(lessThan.reduce()); // SBoolean { value: false }
+ * console.log(lessThan.reduce({})); // SBoolean { value: true }
  */
 class SLessThan extends SReducible {
   constructor(left: SExpression, right: SExpression) {
@@ -189,14 +190,51 @@ class SLessThan extends SReducible {
     return true;
   }
 
-  public reduce() {
+  public reduce(environment: SEnvironment) {
     if (this.left.reducible) {
-      return new SLessThan((this.left as SReducible).reduce(), this.right);
+      return new SLessThan((this.left as SReducible).reduce(environment), this.right);
     } else if (this.right.reducible) {
-      return new SLessThan(this.left, (this.right as SReducible).reduce());
+      return new SLessThan(this.left, (this.right as SReducible).reduce(environment));
     } else {
       return new SBoolean((this.left as SNumber).value < (this.right as SNumber).value);
     }
+  }
+}
+
+/**
+ * Represents a variable in the small-step semantics.
+ * 
+ * @class SVariable
+ * @property {string} name - The name of the variable.
+ * @method toString - Returns the string representation of the variable.
+ * @getter reducible - Indicates whether the variable is reducible.
+ * @method reduce - Reduces the variable by returning its value from the environment.
+ * 
+ * @example
+ * const variable = new SVariable('x');
+ * console.log(variable.toString()); // "x"
+ * console.log(variable.reducible); // true
+ * console.log(variable.reduce({ x: new SNumber(5) })); // SNumber { value: 5 }
+ */
+class SVariable extends SReducible {
+  constructor(name: string) {
+    super();
+
+    this.name = name;
+  }
+
+  name: string;
+
+  public toString(): string {
+    return this.name;
+  }
+
+  get reducible(): boolean {
+    return true;
+  }
+
+  public reduce(environment: SEnvironment) {
+    return environment[this.name];
   }
 }
 
@@ -205,6 +243,7 @@ class SLessThan extends SReducible {
  * 
  * @class SMachine
  * @property {SExpression} expression - The expression to run.
+ * @property {SEnvironment} environment - The environment in which the expression is evaluated.
  * @method step - Runs a single step of the expression.
  * @method run - Runs the expression until it is no longer reducible.
  * 
@@ -213,7 +252,8 @@ class SLessThan extends SReducible {
  *  new SMultiply(new SNumber(2), new SNumber(2)),
  *  new SMultiply(new SNumber(8), new SNumber(8))
  * );
- * const machine = new SMachine(expression);
+ * const environment = {};
+ * const machine = new SMachine(expression, environment);
  * machine.run(); 
  * // Expression: 2 * 2 + 8 * 8
  * // Running machine...
@@ -223,20 +263,24 @@ class SLessThan extends SReducible {
  * // Result: 68
  */
 class SMachine {
-  constructor(expression: SExpression) {
+  constructor(expression: SExpression, environment: SEnvironment) {
     this.expression = expression;
+    this.environment = environment;
   }
 
   private expression: SExpression;
+  private environment: SEnvironment;
 
   public step() {
-    this.expression = (this.expression as SReducible).reduce();
+    this.expression = (this.expression as SReducible).reduce(this.environment);
   }
 
   public run() {
     console.clear();
 
     console.log('Expression: ', this.expression);
+    console.log('Environment: ', this.environment);
+
     console.log('Running machine...');
 
     while (this.expression.reducible) {
@@ -247,6 +291,12 @@ class SMachine {
     console.log('Result: ', this.expression.toString());
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const environment: SEnvironment = {
+  x: new SNumber(5),
+  y: new SNumber(10),
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const numericExpression: SExpression = new SAdd(
@@ -261,7 +311,13 @@ const booleanExpression: SExpression = new SLessThan(
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function runMachine(expression: SExpression) {
-  const machine = new SMachine(expression);
+const variableExpression: SExpression = new SAdd(
+  new SVariable('x'),
+  new SVariable('y'),
+);
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function runMachine(expression: SExpression, environment: SEnvironment) {
+  const machine = new SMachine(expression, environment);
   machine.run();
 }
