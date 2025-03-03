@@ -236,7 +236,7 @@ class SMachine {
   public run() {
     console.clear();
 
-    console.log('Expression: ', expression);
+    console.log('Expression: ', this.expression);
     console.log('Running machine...');
 
     while (this.expression.reducible) {
@@ -248,13 +248,20 @@ class SMachine {
   }
 }
 
-const expression: SExpression = new SAdd(
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const numericExpression: SExpression = new SAdd(
   new SMultiply(new SNumber(2), new SNumber(2)),
   new SMultiply(new SNumber(8), new SNumber(8))
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function runMachine() {
+const booleanExpression: SExpression = new SLessThan(
+  new SMultiply(new SNumber(2), new SNumber(2)),
+  new SMultiply(new SNumber(8), new SNumber(8))
+);
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function runMachine(expression: SExpression) {
   const machine = new SMachine(expression);
   machine.run();
 }

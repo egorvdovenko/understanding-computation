@@ -140,8 +140,8 @@ class SMultiply extends SReducible {
  * @method reduce - Reduces the less than operation by reducing its operands.
  *
  * @example
- * const lessThan = new SLessThan(new SNumber(5), new SNumber(5));
- * console.log(lessThan.toString()); // "5 < 5"
+ * const lessThan = new SLessThan(new SNumber(4), new SNumber(5));
+ * console.log(lessThan.toString()); // "4 < 5"
  * console.log(lessThan.reducible); // true
  * console.log(lessThan.reduce()); // SBoolean { value: false }
  */
@@ -178,17 +178,18 @@ class SLessThan extends SReducible {
  * @method run - Runs the expression until it is no longer reducible.
  *
  * @example
- * const machine = new SMachine(new SAdd(
+ * const expression: SExpression = new SAdd(
  *  new SMultiply(new SNumber(2), new SNumber(2)),
  *  new SMultiply(new SNumber(8), new SNumber(8))
- * ));
+ * );
+ * const machine = new SMachine(expression);
  * machine.run();
- * // Output:
- * // SMachine.run()
+ * // Expression: 2 * 2 + 8 * 8
+ * // Running machine...
  * // 2 * 2 + 8 * 8
  * // 4 + 8 * 8
  * // 4 + 64
- * // 68
+ * // Result: 68
  */
 class SMachine {
     constructor(expression) {
@@ -199,7 +200,7 @@ class SMachine {
     }
     run() {
         console.clear();
-        console.log('Expression: ', expression);
+        console.log('Expression: ', this.expression);
         console.log('Running machine...');
         while (this.expression.reducible) {
             console.log(this.expression.toString());
@@ -208,9 +209,12 @@ class SMachine {
         console.log('Result: ', this.expression.toString());
     }
 }
-const expression = new SAdd(new SMultiply(new SNumber(2), new SNumber(2)), new SMultiply(new SNumber(8), new SNumber(8)));
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function runMachine() {
+const numericExpression = new SAdd(new SMultiply(new SNumber(2), new SNumber(2)), new SMultiply(new SNumber(8), new SNumber(8)));
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const booleanExpression = new SLessThan(new SMultiply(new SNumber(2), new SNumber(2)), new SMultiply(new SNumber(8), new SNumber(8)));
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function runMachine(expression) {
     const machine = new SMachine(expression);
     machine.run();
 }
