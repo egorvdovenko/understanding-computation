@@ -25,7 +25,7 @@ import {
   type SEnvironment,
   type SExpression,
   SNumber, SAdd, SMultiply, SLessThan, SVariable, SMachine
-} from '@/implementation/Part1ProgramsAndMachines/2TheMeaningOfPrograms/SmallStepSemantics';
+} from './SmallStepSemantics.ts';
 
 const environment: SEnvironment = {
   x: new SNumber(5),
