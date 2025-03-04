@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SNumber, SBoolean, SAdd, SMultiply, SLessThan, SVariable } from './SmallStepSemantics';
+import { SNumber, SBoolean, SAdd, SMultiply, SLessThan, SVariable, SMachine } from './SmallStepSemantics';
 
 describe('SmallStepSemantics', () => {
   describe('SNumber', () => {
@@ -146,6 +146,44 @@ describe('SmallStepSemantics', () => {
       const variable = new SVariable('x');
       const reduced = variable.reduce({ x: new SNumber(5) });
       expect(reduced.toString()).toBe('5');
+    });
+  });
+
+  describe('SMachine', () => {
+    it('should create an instance with the given expression and environment', () => {
+      const machine = new SMachine(new SNumber(5), {});
+      expect(machine.expression.toString()).toBe('5');
+      expect(machine.environment).toEqual({});
+    });
+
+    it('should step through a reducible expression', () => {
+      const machine = new SMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
+      machine.step();
+      expect(machine.expression.toString()).toBe('5');
+    });
+
+    it('should run through a reducible expression to completion', () => {
+      const machine = new SMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
+      machine.run();
+      expect(machine.expression.toString()).toBe('5');
+    });
+
+    it('should handle variables in the environment', () => {
+      const machine = new SMachine(new SAdd(new SVariable('x'), new SNumber(3)), { x: new SNumber(2) });
+      machine.run();
+      expect(machine.expression.toString()).toBe('5');
+    });
+
+    it('should handle complex expressions', () => {
+      const machine = new SMachine(
+        new SMultiply(
+          new SAdd(new SVariable('x'), new SNumber(3)),
+          new SAdd(new SVariable('y'), new SNumber(10))
+        ),
+        { x: new SNumber(2), y: new SNumber(5) }
+      );
+      machine.run();
+      expect(machine.expression.toString()).toBe('75');
     });
   });
 });
