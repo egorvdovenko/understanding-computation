@@ -1,8 +1,10 @@
 export type SExpression = SNumber | SBoolean | SAdd | SMultiply | SLessThan | SVariable;
+export type SStatement = SDoNothing | SAssign;
+
 export type SEnvironment = Record<string, SExpression>;
 
 export abstract class SReducible {
-  abstract reduce(environment: SEnvironment): SExpression;
+  abstract reduce(environment: SEnvironment): SExpression | [SStatement, SEnvironment];
 }
 
 /**
@@ -64,7 +66,7 @@ export class SBoolean {
 }
 
 /**
- * Represents an addition operation in the small-step semantics.
+ * Represents an addition expression in the small-step semantics.
  *
  * @class SAdd
  * @property {SExpression} left - The left operand of the addition.
@@ -100,9 +102,9 @@ export class SAdd extends SReducible {
 
   public reduce(environment: SEnvironment) {
     if (this.left.reducible) {
-      return new SAdd((this.left as SReducible).reduce(environment), this.right);
+      return new SAdd((this.left as SReducible).reduce(environment) as SExpression, this.right);
     } else if (this.right.reducible) {
-      return new SAdd(this.left, (this.right as SReducible).reduce(environment));
+      return new SAdd(this.left, (this.right as SReducible).reduce(environment) as SExpression);
     } else {
       return new SNumber((this.left as SNumber).value + (this.right as SNumber).value);
     }
@@ -110,7 +112,7 @@ export class SAdd extends SReducible {
 }
 
 /**
- * Represents a multiplication operation in the small-step semantics.
+ * Represents a multiplication expression in the small-step semantics.
  *
  * @class SMultiply
  * @property {SExpression} left - The left operand of the multiplication.
@@ -146,9 +148,9 @@ export class SMultiply extends SReducible {
 
   public reduce(environment: SEnvironment) {
     if (this.left.reducible) {
-      return new SMultiply((this.left as SReducible).reduce(environment), this.right);
+      return new SMultiply((this.left as SReducible).reduce(environment)  as SExpression, this.right);
     } else if (this.right.reducible) {
-      return new SMultiply(this.left, (this.right as SReducible).reduce(environment));
+      return new SMultiply(this.left, (this.right as SReducible).reduce(environment)  as SExpression);
     } else {
       return new SNumber((this.left as SNumber).value * (this.right as SNumber).value);
     }
@@ -156,14 +158,14 @@ export class SMultiply extends SReducible {
 }
 
 /**
- * Represents a less than operation in the small-step semantics.
+ * Represents a less than expression in the small-step semantics.
  *
  * @class SLessThan
- * @property {SExpression} left - The left operand of the less than operation.
- * @property {SExpression} right - The right operand of the less than operation.
- * @method toString - Returns the string representation of the less than operation.
- * @getter reducible - Indicates whether the less than operation is reducible.
- * @method reduce - Reduces the less than operation by reducing its operands.
+ * @property {SExpression} left - The left operand of the less than expression.
+ * @property {SExpression} right - The right operand of the less than expression.
+ * @method toString - Returns the string representation of the less than expression.
+ * @getter reducible - Indicates whether the less than expression is reducible.
+ * @method reduce - Reduces the less than expression by reducing its operands.
  *
  * @example
  * const lessThan = new SLessThan(new SNumber(4), new SNumber(5));
@@ -192,9 +194,9 @@ export class SLessThan extends SReducible {
 
   public reduce(environment: SEnvironment) {
     if (this.left.reducible) {
-      return new SLessThan((this.left as SReducible).reduce(environment), this.right);
+      return new SLessThan((this.left as SReducible).reduce(environment) as SExpression, this.right);
     } else if (this.right.reducible) {
-      return new SLessThan(this.left, (this.right as SReducible).reduce(environment));
+      return new SLessThan(this.left, (this.right as SReducible).reduce(environment) as SExpression);
     } else {
       return new SBoolean((this.left as SNumber).value < (this.right as SNumber).value);
     }
@@ -202,7 +204,7 @@ export class SLessThan extends SReducible {
 }
 
 /**
- * Represents a variable in the small-step semantics.
+ * Represents a variable expression in the small-step semantics.
  *
  * @class SVariable
  * @property {string} name - The name of the variable.
@@ -239,9 +241,61 @@ export class SVariable extends SReducible {
 }
 
 /**
+ * Represents a do-nothing statemet in the small-step semantics.
+ * 
+ * @class SDoNothing
+ * @method toString - Returns the string representation of the do-nothing statemet.
+ * @getter reducible - Indicates whether the do-nothing statemet is reducible (always false for DoNothing).
+ * 
+ * @example
+ * const doNothing = new SDoNothing();
+ * console.log(doNothing.toString()); // "do-nothing"
+ * console.log(doNothing.reducible); // false
+ */
+export class SDoNothing {
+  public toString() {
+    return "do-nothing";
+  }
+
+  get reducible() {
+    return false;
+  }
+}
+
+export class SAssign extends SReducible {
+  constructor(name: string, expression: SExpression) {
+    super();
+
+    this.name = name;
+    this.expression = expression;
+  }
+
+  name: string;
+  expression: SExpression;
+
+  public toString() {
+    return `${this.name} = ${this.expression}`;
+  }
+
+  get reducible() {
+    return true;
+  }
+
+  public reduce(environment: SEnvironment) {
+    if (this.expression.reducible) {
+      return [new SAssign(this.name, (this.expression as SReducible).reduce(environment) as SExpression), environment] as [SStatement, SEnvironment];
+    } else {
+      const newEnvironment = { ...environment };
+      newEnvironment[this.name] = this.expression;
+      return [new SDoNothing(), newEnvironment] as [SStatement, SEnvironment];
+    }
+  }
+}
+
+/**
  * Represents a simple machine that can run a small-step semantics expression.
  *
- * @class SMachine
+ * @class SExpressionMachine
  * @property {SExpression} expression - The expression to run.
  * @property {SEnvironment} environment - The environment in which the expression is evaluated.
  * @method step - Runs a single step of the expression.
@@ -253,16 +307,19 @@ export class SVariable extends SReducible {
  *  new SMultiply(new SNumber(8), new SNumber(8))
  * );
  * const environment = {};
- * const machine = new SMachine(expression, environment);
+ * const machine = new SExpressionMachine(expression, environment);
  * machine.run();
+ * // ----------------------------------------
  * // Expression: 2 * 2 + 8 * 8
- * // Running machine...
+ * // Environment: {}
  * // 2 * 2 + 8 * 8
  * // 4 + 8 * 8
  * // 4 + 64
+ * // 68
  * // Result: 68
+ * // ----------------------------------------
  */
-export class SMachine {
+export class SExpressionMachine {
   constructor(expression: SExpression, environment: SEnvironment) {
     this.expression = expression;
     this.environment = environment;
@@ -272,7 +329,7 @@ export class SMachine {
   private environment: SEnvironment;
 
   public step() {
-    this.expression = (this.expression as SReducible).reduce(this.environment);
+    this.expression = (this.expression as SReducible).reduce(this.environment) as SExpression;
   }
 
   public run() {
@@ -287,6 +344,61 @@ export class SMachine {
     }
 
     console.log("Result: ", this.expression.toString());
+    console.log("----------------------------------------");
+  }
+}
+
+/**
+ * Represents a simple machine that can run a small-step semantics statement.
+ *
+ * @class SStatementMachine
+ * @property {SStatement} statement - The statement to run.
+ * @property {SEnvironment} environment - The environment in which the statement is evaluated.
+ * @method step - Runs a single step of the statement.
+ * @method run - Runs the statement until it is no longer reducible.
+ *
+ * @example
+ * const statement: SStatement = new SAssign("x", new SNumber(5));
+ * const environment = {};
+ * const machine = new SStatementMachine(statement, environment);
+ * machine.run();
+ * // ----------------------------------------
+ * // Statement: x = 5
+ * // Environment: {}
+ * // x = 5
+ * // do-nothing
+ * // Result: do-nothing
+ * // New Environment: { x: 5 }
+ * // ----------------------------------------
+ */
+export class SStatementMachine {
+  constructor(statement: SStatement, environment: SEnvironment) {
+    this.statement = statement;
+    this.environment = environment;
+  }
+
+  statement: SStatement;
+  private environment: SEnvironment;
+
+  public step() {
+    const [statement, environment] = (this.statement as SReducible).reduce(this.environment) as [SStatement, SEnvironment];
+    this.statement = statement;
+    this.environment = environment;
+  }
+
+  public run() {
+    console.log("----------------------------------------");
+
+    console.log("Statement: ", this.statement);
+    console.log("Environment: ", this.environment);
+
+    while (this.statement.reducible) {
+      console.log(this.statement.toString());
+      this.step();
+    }
+
+    console.log("Result: ", this.statement.toString());
+    console.log("New Environment: ", this.environment);
     console.log("----------------------------------------");
   }
 }

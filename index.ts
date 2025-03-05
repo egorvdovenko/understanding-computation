@@ -1,13 +1,17 @@
 import {
   type SEnvironment,
   type SExpression,
-  SNumber, SAdd, SMultiply, SLessThan, SVariable, SMachine
+  type SStatement,
+  SNumber, SAdd, SMultiply, SLessThan, SVariable, SAssign, SExpressionMachine, SStatementMachine,
 } from "./Part1ProgramsAndMachines/2TheMeaningOfPrograms/SmallStepSemantics";
 
 const environment: SEnvironment = {
   x: new SNumber(5),
   y: new SNumber(10),
 };
+
+console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Small-Step Semantics");
+console.group("Expressions");
 
 const numericExpression: SExpression = new SAdd(
   new SMultiply(new SNumber(2), new SNumber(2)),
@@ -24,11 +28,27 @@ const variableExpression: SExpression = new SAdd(
   new SVariable("y"),
 );
 
-function runMachine(expression: SExpression, environment: SEnvironment) {
-  const machine = new SMachine(expression, environment);
+function runExpressionMachine(expression: SExpression, environment: SEnvironment) {
+  const machine = new SExpressionMachine(expression, environment);
   machine.run();
 }
 
-runMachine(numericExpression, environment);
-runMachine(booleanExpression, environment);
-runMachine(variableExpression, environment);
+runExpressionMachine(numericExpression, environment);
+runExpressionMachine(booleanExpression, environment);
+runExpressionMachine(variableExpression, environment);
+
+console.groupEnd();
+console.group("Statements");
+
+const statement: SStatement = new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y")));
+
+function runStatementMachine(statement: SStatement, environment: SEnvironment) {
+  const machine = new SStatementMachine(statement, environment);
+  machine.run();
+}
+
+runStatementMachine(statement, environment);
+
+console.groupEnd();
+console.groupEnd();
+

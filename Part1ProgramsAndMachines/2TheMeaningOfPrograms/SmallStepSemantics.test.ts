@@ -5,7 +5,7 @@ import {
   SMultiply, 
   SLessThan, 
   SVariable, 
-  SMachine 
+  SExpressionMachine 
 } from "./SmallStepSemantics";
 
 describe("SmallStepSemantics", () => {
@@ -156,32 +156,32 @@ describe("SmallStepSemantics", () => {
     });
   });
 
-  describe("SMachine", () => {
+  describe("SExpressionMachine", () => {
     it("should create an instance with the given expression", () => {
-      const machine = new SMachine(new SNumber(5), {});
+      const machine = new SExpressionMachine(new SNumber(5), {});
       expect(machine.expression.toString()).toBe("5");
     });
 
     it("should step through a reducible expression", () => {
-      const machine = new SMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
+      const machine = new SExpressionMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
       machine.step();
       expect(machine.expression.toString()).toBe("5");
     });
 
     it("should run through a reducible expression to completion", () => {
-      const machine = new SMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
+      const machine = new SExpressionMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
       machine.run();
       expect(machine.expression.toString()).toBe("5");
     });
 
     it("should handle variables in the environment", () => {
-      const machine = new SMachine(new SAdd(new SVariable("x"), new SNumber(3)), { x: new SNumber(2) });
+      const machine = new SExpressionMachine(new SAdd(new SVariable("x"), new SNumber(3)), { x: new SNumber(2) });
       machine.run();
       expect(machine.expression.toString()).toBe("5");
     });
 
     it("should handle complex expressions", () => {
-      const machine = new SMachine(
+      const machine = new SExpressionMachine(
         new SMultiply(
           new SAdd(new SVariable("x"), new SNumber(3)),
           new SAdd(new SVariable("y"), new SNumber(10))
