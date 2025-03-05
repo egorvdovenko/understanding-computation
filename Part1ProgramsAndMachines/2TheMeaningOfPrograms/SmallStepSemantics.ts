@@ -403,6 +403,46 @@ export class SSequence extends SReducible {
 }
 
 /**
+ * Represents a while statement in the small-step semantics.
+ *
+ * @class SWhile
+ * @property {SExpression} condition - The condition to evaluate.
+ * @property {SStatement} body - The statement to execute while the condition is true.
+ * @method toString - Returns the string representation of the while statement.
+ * @getter reducible - Indicates whether the while statement is reducible.
+ * @method reduce - Reduces the while statement by converting it to an if statement.
+ *
+ * @example
+ * const whileStatement = new SWhile(new SLessThan(new SVariable('x'), new SNumber(5)), new SAssign('x', new SAdd(new SVariable('x'), new SNumber(1)));
+ * console.log(whileStatement.toString()); // "while (x < 5) { x = x + 1 }"
+ * console.log(whileStatement.reducible); // true
+ * console.log(whileStatement.reduce({})); // SIf { condition: SLessThan { left: SVariable { name: 'x' }, right: SNumber { value: 5 } }, consequence: SAssign { name: 'x', expression: SAdd { left: SVariable { name: 'x' }, right: SNumber { value: 1 } } }, alternative: SDoNothing {} }
+ */
+export class SWhile extends SReducible {
+  constructor(condition: SExpression, body: SStatement) {
+    super();
+
+    this.condition = condition;
+    this.body = body;
+  }
+
+  condition: SExpression;
+  body: SStatement;
+
+  public toString() {
+    return `while (${this.condition}) { ${this.body} }`;
+  }
+
+  get reducible() {
+    return true;
+  }
+
+  public reduce(environment: SEnvironment) {
+    return [new SIf(this.condition, new SSequence(this.body, this), new SDoNothing()), environment] as [SStatement, SEnvironment];
+  }
+}
+
+/**
  * Represents a simple machine that can run a small-step semantics expression.
  *
  * @class SExpressionMachine

@@ -9,6 +9,7 @@ import {
   SAssign,
   SIf,
   SSequence,
+  SWhile,
   SExpressionMachine,
   SStatementMachine,
 } from "./SmallStepSemantics";
@@ -269,6 +270,47 @@ describe("SmallStepSemantics", () => {
         new SAssign("y", new SMultiply(new SVariable("x"), new SNumber(2)))
       );
       const machine = new SStatementMachine(sequence, {});
+      machine.run();
+      expect(machine.statement.toString()).toBe("do-nothing");
+      expect(machine.environment.x.toString()).toBe("5");
+      expect(machine.environment.y.toString()).toBe("10");
+    });
+  });
+
+  describe("SWhile", () => {
+    it("should create an instance with the given condition and body", () => {
+      const whileStatement = new SWhile(new SLessThan(new SVariable("x"), new SNumber(5)), new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1))));
+      expect(whileStatement.toString()).toBe("while (x < 5) { x = x + 1 }");
+    });
+
+    it("should indicate that it is reducible", () => {
+      const whileStatement = new SWhile(new SLessThan(new SVariable("x"), new SNumber(5)), new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1))));
+      expect(whileStatement.reducible).toBe(true);
+    });
+
+    it("should reduce to an SIf statement", () => {
+      const whileStatement = new SWhile(new SLessThan(new SVariable("x"), new SNumber(5)), new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1))));
+      const [reduced] = whileStatement.reduce({});
+      expect(reduced.toString()).toBe("if (x < 5) { x = x + 1; while (x < 5) { x = x + 1 } } else { do-nothing }");
+    });
+
+    it("should handle while loops correctly", () => {
+      const whileStatement = new SWhile(new SLessThan(new SVariable("x"), new SNumber(5)), new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1))));
+      const machine = new SStatementMachine(whileStatement, { x: new SNumber(0) });
+      machine.run();
+      expect(machine.statement.toString()).toBe("do-nothing");
+      expect(machine.environment.x.toString()).toBe("5");
+    });
+
+    it("should handle complex while loops", () => {
+      const whileStatement = new SWhile(
+        new SLessThan(new SVariable("x"), new SNumber(5)),
+        new SSequence(
+          new SAssign("y", new SAdd(new SVariable("y"), new SNumber(2))),
+          new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1)))
+        )
+      );
+      const machine = new SStatementMachine(whileStatement, { x: new SNumber(0), y: new SNumber(0) });
       machine.run();
       expect(machine.statement.toString()).toBe("do-nothing");
       expect(machine.environment.x.toString()).toBe("5");

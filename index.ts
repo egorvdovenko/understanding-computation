@@ -10,6 +10,7 @@ import {
   SAssign, 
   SIf,
   SSequence,
+  SWhile,
   SExpressionMachine, 
   SStatementMachine,
 } from "./Part1ProgramsAndMachines/2TheMeaningOfPrograms/SmallStepSemantics";
@@ -62,6 +63,11 @@ const sequenceStatement: SStatement = new SSequence(
   new SAssign("z", new SAdd(new SVariable("z"), new SVariable("z"))),
 );
 
+const whileStatement: SStatement = new SWhile(
+  new SLessThan(new SVariable("x"), new SVariable("y")),
+  new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1))),
+);
+
 function runStatementMachine(statement: SStatement, environment: SEnvironment) {
   const machine = new SStatementMachine(statement, environment);
   machine.run();
@@ -70,6 +76,7 @@ function runStatementMachine(statement: SStatement, environment: SEnvironment) {
 runStatementMachine(assignStatement, environment);
 runStatementMachine(ifStatement, environment);
 runStatementMachine(sequenceStatement, environment);
+runStatementMachine(whileStatement, environment);
 
 console.groupEnd();
 console.groupEnd();
