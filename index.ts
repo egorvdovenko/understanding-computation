@@ -2,7 +2,15 @@ import {
   type SEnvironment,
   type SExpression,
   type SStatement,
-  SNumber, SAdd, SMultiply, SLessThan, SVariable, SAssign, SExpressionMachine, SStatementMachine,
+  SNumber, 
+  SAdd, 
+  SMultiply, 
+  SLessThan, 
+  SVariable, 
+  SAssign, 
+  SIf,
+  SExpressionMachine, 
+  SStatementMachine,
 } from "./Part1ProgramsAndMachines/2TheMeaningOfPrograms/SmallStepSemantics";
 
 const environment: SEnvironment = {
@@ -40,14 +48,21 @@ runExpressionMachine(variableExpression, environment);
 console.groupEnd();
 console.group("Statements");
 
-const statement: SStatement = new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y")));
+const assignStatement: SStatement = new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y")));
+
+const ifStatement: SStatement = new SIf(
+  new SLessThan(new SVariable("x"), new SVariable("y")),
+  new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y"))),
+  new SAssign("z", new SAdd(new SVariable("y"), new SVariable("x"))),
+);
 
 function runStatementMachine(statement: SStatement, environment: SEnvironment) {
   const machine = new SStatementMachine(statement, environment);
   machine.run();
 }
 
-runStatementMachine(statement, environment);
+runStatementMachine(assignStatement, environment);
+runStatementMachine(ifStatement, environment);
 
 console.groupEnd();
 console.groupEnd();

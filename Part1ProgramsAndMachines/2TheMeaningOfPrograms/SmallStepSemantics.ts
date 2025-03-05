@@ -262,6 +262,22 @@ export class SDoNothing {
   }
 }
 
+/**
+ * Represents an assignment statement in the small-step semantics.
+ *
+ * @class SAssign
+ * @property {string} name - The name of the variable to assign.
+ * @property {SExpression} expression - The expression to assign to the variable.
+ * @method toString - Returns the string representation of the assignment statement.
+ * @getter reducible - Indicates whether the assignment statement is reducible.
+ * @method reduce - Reduces the assignment statement by reducing its expression.
+ *
+ * @example
+ * const assign = new SAssign('x', new SNumber(5));
+ * console.log(assign.toString()); // "x = 5"
+ * console.log(assign.reducible); // true
+ * console.log(assign.reduce({})); // SDoNothing {}
+ */
 export class SAssign extends SReducible {
   constructor(name: string, expression: SExpression) {
     super();
@@ -288,6 +304,55 @@ export class SAssign extends SReducible {
       const newEnvironment = { ...environment };
       newEnvironment[this.name] = this.expression;
       return [new SDoNothing(), newEnvironment] as [SStatement, SEnvironment];
+    }
+  }
+}
+
+/**
+ * Represents an if statement in the small-step semantics.
+ *
+ * @class SIf
+ * @property {SExpression} condition - The condition to evaluate.
+ * @property {SStatement} consequence - The statement to execute if the condition is true.
+ * @property {SStatement} alternative - The statement to execute if the condition is false.
+ * @method toString - Returns the string representation of the if statement.
+ * @getter reducible - Indicates whether the if statement is reducible.
+ * @method reduce - Reduces the if statement by reducing its condition.
+ *
+ * @example
+ * const ifStatement = new SIf(new SBoolean(true), new SAssign('x', new SNumber(5)), new SAssign('x', new SNumber(10)));
+ * console.log(ifStatement.toString()); // "if (true) { x = 5 } else { x = 10 }"
+ * console.log(ifStatement.reducible); // true
+ * console.log(ifStatement.reduce({})); // SAssign { name: 'x', expression: SNumber { value: 5 } }
+ */
+export class SIf extends SReducible {
+  constructor(condition: SExpression, consequence: SStatement, alternative: SStatement) {
+    super();
+
+    this.condition = condition;
+    this.consequence = consequence;
+    this.alternative = alternative;
+  }
+
+  condition: SExpression;
+  consequence: SStatement;
+  alternative: SStatement;
+
+  public toString() {
+    return `if (${this.condition}) { ${this.consequence} } else { ${this.alternative} }`;
+  }
+
+  get reducible() {
+    return true;
+  }
+
+  public reduce(environment: SEnvironment) {
+    if (this.condition.reducible) {
+      return [new SIf((this.condition as SReducible).reduce(environment) as SExpression, this.consequence, this.alternative), environment] as [SStatement, SEnvironment];
+    } else {
+      return (this.condition as SBoolean).value === new SBoolean(true).value
+        ? [this.consequence, environment] as [SStatement, SEnvironment]
+        : [this.alternative, environment] as [SStatement, SEnvironment];
     }
   }
 }

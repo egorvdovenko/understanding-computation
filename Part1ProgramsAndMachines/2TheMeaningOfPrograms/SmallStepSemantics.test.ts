@@ -7,6 +7,7 @@ import {
   SVariable, 
   SDoNothing,
   SAssign,
+  SIf,
   SExpressionMachine,
   SStatementMachine,
 } from "./SmallStepSemantics";
@@ -193,6 +194,36 @@ describe("SmallStepSemantics", () => {
       const [reduced, environment] = assign.reduce({});
       expect(reduced.toString()).toBe("do-nothing");
       expect(environment.x.toString()).toBe("5");
+    });
+  });
+
+  describe("SIf", () => {
+    it("should create an instance with the given condition, consequence, and alternative", () => {
+      const ifStatement = new SIf(new SBoolean(true), new SAssign("x", new SNumber(5)), new SAssign("x", new SNumber(10)));
+      expect(ifStatement.toString()).toBe("if (true) { x = 5 } else { x = 10 }");
+    });
+
+    it("should indicate that it is reducible", () => {
+      const ifStatement = new SIf(new SBoolean(true), new SAssign("x", new SNumber(5)), new SAssign("x", new SNumber(10)));
+      expect(ifStatement.reducible).toBe(true);
+    });
+
+    it("should reduce to the consequence if the condition is true", () => {
+      const ifStatement = new SIf(new SBoolean(true), new SAssign("x", new SNumber(5)), new SAssign("x", new SNumber(10)));
+      const [reduced] = ifStatement.reduce({});
+      expect(reduced.toString()).toBe("x = 5");
+    });
+
+    it("should reduce to the alternative if the condition is false", () => {
+      const ifStatement = new SIf(new SBoolean(false), new SAssign("x", new SNumber(5)), new SAssign("x", new SNumber(10)));
+      const [reduced] = ifStatement.reduce({});
+      expect(reduced.toString()).toBe("x = 10");
+    });
+
+    it("should reduce the condition if it is reducible", () => {
+      const ifStatement = new SIf(new SLessThan(new SNumber(2), new SNumber(3)), new SAssign("x", new SNumber(5)), new SAssign("x", new SNumber(10)));
+      const [reduced] = ifStatement.reduce({});
+      expect(reduced.toString()).toBe("if (true) { x = 5 } else { x = 10 }");
     });
   });
 
