@@ -268,7 +268,7 @@ export class SMachine {
     this.environment = environment;
   }
 
-  private expression: SExpression;
+  expression: SExpression;
   private environment: SEnvironment;
 
   public step() {
@@ -276,18 +276,17 @@ export class SMachine {
   }
 
   public run() {
-    console.clear();
+    console.log("----------------------------------------");
 
-    console.log('Expression: ', this.expression);
-    console.log('Environment: ', this.environment);
-
-    console.log('Running machine...');
+    console.log("Expression: ", this.expression);
+    console.log("Environment: ", this.environment);
 
     while (this.expression.reducible) {
       console.log(this.expression.toString());
       this.step();
     }
 
-    console.log('Result: ', this.expression.toString());
+    console.log("Result: ", this.expression.toString());
+    console.log("----------------------------------------");
   }
 }
