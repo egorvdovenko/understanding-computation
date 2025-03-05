@@ -326,7 +326,7 @@ export class SExpressionMachine {
   }
 
   expression: SExpression;
-  private environment: SEnvironment;
+  environment: SEnvironment;
 
   public step() {
     this.expression = (this.expression as SReducible).reduce(this.environment) as SExpression;
@@ -378,7 +378,7 @@ export class SStatementMachine {
   }
 
   statement: SStatement;
-  private environment: SEnvironment;
+  environment: SEnvironment;
 
   public step() {
     const [statement, environment] = (this.statement as SReducible).reduce(this.environment) as [SStatement, SEnvironment];

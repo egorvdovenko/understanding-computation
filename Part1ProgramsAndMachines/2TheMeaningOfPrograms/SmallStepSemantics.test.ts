@@ -5,7 +5,10 @@ import {
   SMultiply, 
   SLessThan, 
   SVariable, 
-  SExpressionMachine 
+  SDoNothing,
+  SAssign,
+  SExpressionMachine,
+  SStatementMachine,
 } from "./SmallStepSemantics";
 
 describe("SmallStepSemantics", () => {
@@ -156,40 +159,118 @@ describe("SmallStepSemantics", () => {
     });
   });
 
+  describe("SDoNothing", () => {
+    it("should return the correct string representation", () => {
+      const doNothing = new SDoNothing();
+      expect(doNothing.toString()).toBe("do-nothing");
+    });
+
+    it("should indicate that it is not reducible", () => {
+      const doNothing = new SDoNothing();
+      expect(doNothing.reducible).toBe(false);
+    });
+  });
+
+  describe("SAssign", () => {
+    it("should create an instance with the given name and expression", () => {
+      const assign = new SAssign("x", new SNumber(5));
+      expect(assign.toString()).toBe("x = 5");
+    });
+
+    it("should indicate that it is reducible", () => {
+      const assign = new SAssign("x", new SNumber(5));
+      expect(assign.reducible).toBe(true);
+    });
+
+    it("should reduce to a new SAssign instance if the expression is reducible", () => {
+      const assign = new SAssign("x", new SAdd(new SNumber(2), new SNumber(3)));
+      const [reduced] = assign.reduce({});
+      expect(reduced.toString()).toBe("x = 5");
+    });
+
+    it("should reduce to an SDoNothing instance and update the environment if the expression is not reducible", () => {
+      const assign = new SAssign("x", new SNumber(5));
+      const [reduced, environment] = assign.reduce({});
+      expect(reduced.toString()).toBe("do-nothing");
+      expect(environment.x.toString()).toBe("5");
+    });
+  });
+
   describe("SExpressionMachine", () => {
     it("should create an instance with the given expression", () => {
-      const machine = new SExpressionMachine(new SNumber(5), {});
-      expect(machine.expression.toString()).toBe("5");
+      const expression = new SAdd(new SNumber(2), new SNumber(3));
+      const machine = new SExpressionMachine(expression, {});
+      expect(machine.expression.toString()).toBe("2 + 3");
     });
 
     it("should step through a reducible expression", () => {
-      const machine = new SExpressionMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
+      const expression = new SAdd(new SNumber(2), new SNumber(3));
+      const machine = new SExpressionMachine(expression, {});
       machine.step();
       expect(machine.expression.toString()).toBe("5");
     });
 
     it("should run through a reducible expression to completion", () => {
-      const machine = new SExpressionMachine(new SAdd(new SNumber(2), new SNumber(3)), {});
-      machine.run();
-      expect(machine.expression.toString()).toBe("5");
-    });
-
-    it("should handle variables in the environment", () => {
-      const machine = new SExpressionMachine(new SAdd(new SVariable("x"), new SNumber(3)), { x: new SNumber(2) });
+      const expression = new SAdd(new SNumber(2), new SNumber(3));
+      const machine = new SExpressionMachine(expression, {});
       machine.run();
       expect(machine.expression.toString()).toBe("5");
     });
 
     it("should handle complex expressions", () => {
-      const machine = new SExpressionMachine(
-        new SMultiply(
-          new SAdd(new SVariable("x"), new SNumber(3)),
-          new SAdd(new SVariable("y"), new SNumber(10))
-        ),
-        { x: new SNumber(2), y: new SNumber(5) }
+      const expression = new SAdd(
+        new SMultiply(new SNumber(2), new SNumber(3)),
+        new SMultiply(new SNumber(4), new SNumber(5))
       );
+      const machine = new SExpressionMachine(expression, {});
       machine.run();
-      expect(machine.expression.toString()).toBe("75");
+      expect(machine.expression.toString()).toBe("26");
+    });
+
+    it("should handle variables in the environment", () => {
+      const expression = new SAdd(new SVariable("x"), new SNumber(3));
+      const machine = new SExpressionMachine(expression, { x: new SNumber(2) });
+      machine.run();
+      expect(machine.expression.toString()).toBe("5");
+    });
+  });
+
+  describe("SStatementMachine", () => {
+    it("should create an instance with the given statement", () => {
+      const statement = new SAssign("x", new SNumber(5));
+      const machine = new SStatementMachine(statement, {});
+      expect(machine.statement.toString()).toBe("x = 5");
+    });
+
+    it("should step through a reducible statement", () => {
+      const statement = new SAssign("x", new SAdd(new SNumber(2), new SNumber(3)));
+      const machine = new SStatementMachine(statement, {});
+      machine.step();
+      expect(machine.statement.toString()).toBe("x = 5");
+    });
+
+    it("should run through a reducible statement to completion", () => {
+      const statement = new SAssign("x", new SAdd(new SNumber(2), new SNumber(3)));
+      const machine = new SStatementMachine(statement, {});
+      machine.run();
+      expect(machine.statement.toString()).toBe("do-nothing");
+      expect(machine.environment.x.toString()).toBe("5");
+    });
+
+    it("should handle variables in the environment", () => {
+      const statement = new SAssign("x", new SAdd(new SVariable("y"), new SNumber(3)));
+      const machine = new SStatementMachine(statement, { y: new SNumber(2) });
+      machine.run();
+      expect(machine.statement.toString()).toBe("do-nothing");
+      expect(machine.environment.x.toString()).toBe("5");
+    });
+
+    it("should handle complex statements", () => {
+      const statement = new SAssign("z", new SMultiply(new SAdd(new SVariable("x"), new SNumber(3)), new SAdd(new SVariable("y"), new SNumber(10))));
+      const machine = new SStatementMachine(statement, { x: new SNumber(2), y: new SNumber(5) });
+      machine.run();
+      expect(machine.statement.toString()).toBe("do-nothing");
+      expect(machine.environment.z.toString()).toBe("75");
     });
   });
 });
