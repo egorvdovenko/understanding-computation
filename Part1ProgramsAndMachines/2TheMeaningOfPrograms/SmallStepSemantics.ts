@@ -358,6 +358,51 @@ export class SIf extends SReducible {
 }
 
 /**
+ * Represents a sequence statement in the small-step semantics.
+ *
+ * @class SSequence
+ * @property {SStatement} first - The first statement to execute.
+ * @property {SStatement} second - The second statement to execute.
+ * @method toString - Returns the string representation of the sequence statement.
+ * @getter reducible - Indicates whether the sequence statement is reducible.
+ * @method reduce - Reduces the sequence statement by reducing its first statement.
+ *
+ * @example
+ * const sequence = new SSequence(new SDoNothing(), new SAssign('x', new SNumber(5)));
+ * console.log(sequence.toString()); // "do-nothing; x = 5"
+ * console.log(sequence.reducible); // true
+ * console.log(sequence.reduce({})); // [SAssign { name: 'x', expression: SNumber { value: 5 } }, {}]
+ */
+export class SSequence extends SReducible {
+  constructor(first: SStatement, second: SStatement) {
+    super();
+
+    this.first = first;
+    this.second = second;
+  }
+
+  first: SStatement;
+  second: SStatement;
+
+  public toString() {
+    return `${this.first}; ${this.second}`;
+  }
+
+  get reducible() {
+    return true;
+  }
+
+  public reduce(environment: SEnvironment) {
+    if (this.first instanceof SDoNothing) {
+      return [this.second, environment] as [SStatement, SEnvironment];
+    } else {
+      const [first, newEnvironment] = (this.first as SReducible).reduce(environment) as [SStatement, SEnvironment];
+      return [new SSequence(first, this.second), newEnvironment] as [SStatement, SEnvironment];
+    }
+  }
+}
+
+/**
  * Represents a simple machine that can run a small-step semantics expression.
  *
  * @class SExpressionMachine

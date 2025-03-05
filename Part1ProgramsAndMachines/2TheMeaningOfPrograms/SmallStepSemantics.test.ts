@@ -8,6 +8,7 @@ import {
   SDoNothing,
   SAssign,
   SIf,
+  SSequence,
   SExpressionMachine,
   SStatementMachine,
 } from "./SmallStepSemantics";
@@ -224,6 +225,54 @@ describe("SmallStepSemantics", () => {
       const ifStatement = new SIf(new SLessThan(new SNumber(2), new SNumber(3)), new SAssign("x", new SNumber(5)), new SAssign("x", new SNumber(10)));
       const [reduced] = ifStatement.reduce({});
       expect(reduced.toString()).toBe("if (true) { x = 5 } else { x = 10 }");
+    });
+
+    it("should reduce to the consequence if the condition reduces to true", () => {
+      const ifStatement = new SIf(new SBoolean(true), new SDoNothing(), new SAssign("x", new SNumber(10)));
+      const [reduced] = ifStatement.reduce({});
+      expect(reduced.toString()).toBe("do-nothing");
+    });
+
+    it("should reduce to the alternative if the condition reduces to false", () => {
+      const ifStatement = new SIf(new SBoolean(false), new SAssign("x", new SNumber(5)), new SDoNothing());
+      const [reduced] = ifStatement.reduce({});
+      expect(reduced.toString()).toBe("do-nothing");
+    });
+  });
+
+  describe("SSequence", () => {
+    it("should create an instance with the given first and second statements", () => {
+      const sequence = new SSequence(new SDoNothing(), new SAssign("x", new SNumber(5)));
+      expect(sequence.toString()).toBe("do-nothing; x = 5");
+    });
+
+    it("should indicate that it is reducible", () => {
+      const sequence = new SSequence(new SDoNothing(), new SAssign("x", new SNumber(5)));
+      expect(sequence.reducible).toBe(true);
+    });
+
+    it("should reduce to the second statement if the first statement is SDoNothing", () => {
+      const sequence = new SSequence(new SDoNothing(), new SAssign("x", new SNumber(5)));
+      const [reduced] = sequence.reduce({});
+      expect(reduced.toString()).toBe("x = 5");
+    });
+
+    it("should reduce the first statement if it is reducible", () => {
+      const sequence = new SSequence(new SAssign("x", new SAdd(new SNumber(2), new SNumber(3))), new SDoNothing());
+      const [reduced] = sequence.reduce({});
+      expect(reduced.toString()).toBe("x = 5; do-nothing");
+    });
+
+    it("should handle complex sequences", () => {
+      const sequence = new SSequence(
+        new SAssign("x", new SAdd(new SNumber(2), new SNumber(3))),
+        new SAssign("y", new SMultiply(new SVariable("x"), new SNumber(2)))
+      );
+      const machine = new SStatementMachine(sequence, {});
+      machine.run();
+      expect(machine.statement.toString()).toBe("do-nothing");
+      expect(machine.environment.x.toString()).toBe("5");
+      expect(machine.environment.y.toString()).toBe("10");
     });
   });
 

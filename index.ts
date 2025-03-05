@@ -9,6 +9,7 @@ import {
   SVariable, 
   SAssign, 
   SIf,
+  SSequence,
   SExpressionMachine, 
   SStatementMachine,
 } from "./Part1ProgramsAndMachines/2TheMeaningOfPrograms/SmallStepSemantics";
@@ -56,6 +57,11 @@ const ifStatement: SStatement = new SIf(
   new SAssign("z", new SAdd(new SVariable("y"), new SVariable("x"))),
 );
 
+const sequenceStatement: SStatement = new SSequence(
+  new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y"))),
+  new SAssign("z", new SAdd(new SVariable("z"), new SVariable("z"))),
+);
+
 function runStatementMachine(statement: SStatement, environment: SEnvironment) {
   const machine = new SStatementMachine(statement, environment);
   machine.run();
@@ -63,6 +69,7 @@ function runStatementMachine(statement: SStatement, environment: SEnvironment) {
 
 runStatementMachine(assignStatement, environment);
 runStatementMachine(ifStatement, environment);
+runStatementMachine(sequenceStatement, environment);
 
 console.groupEnd();
 console.groupEnd();
