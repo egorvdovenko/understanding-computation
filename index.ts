@@ -80,4 +80,3 @@ runStatementMachine(whileStatement, environment);
 
 console.groupEnd();
 console.groupEnd();
-

@@ -1,5 +1,5 @@
 export type SExpression = SNumber | SBoolean | SAdd | SMultiply | SLessThan | SVariable;
-export type SStatement = SDoNothing | SAssign;
+export type SStatement = SDoNothing | SAssign | SIf | SSequence | SWhile;
 
 export type SEnvironment = Record<string, SExpression>;
 
