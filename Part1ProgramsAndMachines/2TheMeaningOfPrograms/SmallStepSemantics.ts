@@ -3,8 +3,12 @@ export type SStatement = SDoNothing | SAssign | SIf | SSequence | SWhile;
 
 export type SEnvironment = Record<string, SExpression>;
 
-export abstract class SReducible {
-  abstract reduce(environment: SEnvironment): SExpression | [SStatement, SEnvironment];
+export abstract class SReducibleExpression {
+  abstract reduce(environment: SEnvironment): SExpression;
+}
+
+export abstract class SReducibleStatement {
+  abstract reduce(environment: SEnvironment): [SStatement, SEnvironment];
 }
 
 /**
@@ -81,7 +85,7 @@ export class SBoolean {
  * console.log(add.reducible); // true
  * console.log(add.reduce({})); // SNumber { value: 10 }
  */
-export class SAdd extends SReducible {
+export class SAdd extends SReducibleExpression {
   constructor(left: SExpression, right: SExpression) {
     super();
 
@@ -100,11 +104,11 @@ export class SAdd extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): SExpression {
     if (this.left.reducible) {
-      return new SAdd((this.left as SReducible).reduce(environment) as SExpression, this.right);
+      return new SAdd((this.left as SReducibleExpression).reduce(environment), this.right);
     } else if (this.right.reducible) {
-      return new SAdd(this.left, (this.right as SReducible).reduce(environment) as SExpression);
+      return new SAdd(this.left, (this.right as SReducibleExpression).reduce(environment));
     } else {
       return new SNumber((this.left as SNumber).value + (this.right as SNumber).value);
     }
@@ -127,7 +131,7 @@ export class SAdd extends SReducible {
  * console.log(multiply.reducible); // true
  * console.log(multiply.reduce({})); // SNumber { value: 25 }
  */
-export class SMultiply extends SReducible {
+export class SMultiply extends SReducibleExpression {
   constructor(left: SExpression, right: SExpression) {
     super();
 
@@ -146,11 +150,11 @@ export class SMultiply extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): SExpression {
     if (this.left.reducible) {
-      return new SMultiply((this.left as SReducible).reduce(environment)  as SExpression, this.right);
+      return new SMultiply((this.left as SReducibleExpression).reduce(environment), this.right);
     } else if (this.right.reducible) {
-      return new SMultiply(this.left, (this.right as SReducible).reduce(environment)  as SExpression);
+      return new SMultiply(this.left, (this.right as SReducibleExpression).reduce(environment));
     } else {
       return new SNumber((this.left as SNumber).value * (this.right as SNumber).value);
     }
@@ -173,7 +177,7 @@ export class SMultiply extends SReducible {
  * console.log(lessThan.reducible); // true
  * console.log(lessThan.reduce({})); // SBoolean { value: true }
  */
-export class SLessThan extends SReducible {
+export class SLessThan extends SReducibleExpression {
   constructor(left: SExpression, right: SExpression) {
     super();
 
@@ -192,11 +196,11 @@ export class SLessThan extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): SExpression {
     if (this.left.reducible) {
-      return new SLessThan((this.left as SReducible).reduce(environment) as SExpression, this.right);
+      return new SLessThan((this.left as SReducibleExpression).reduce(environment), this.right);
     } else if (this.right.reducible) {
-      return new SLessThan(this.left, (this.right as SReducible).reduce(environment) as SExpression);
+      return new SLessThan(this.left, (this.right as SReducibleExpression).reduce(environment));
     } else {
       return new SBoolean((this.left as SNumber).value < (this.right as SNumber).value);
     }
@@ -218,7 +222,7 @@ export class SLessThan extends SReducible {
  * console.log(variable.reducible); // true
  * console.log(variable.reduce({ x: new SNumber(5) })); // SNumber { value: 5 }
  */
-export class SVariable extends SReducible {
+export class SVariable extends SReducibleExpression {
   constructor(name: string) {
     super();
 
@@ -235,7 +239,7 @@ export class SVariable extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): SExpression {
     return environment[this.name];
   }
 }
@@ -278,7 +282,7 @@ export class SDoNothing {
  * console.log(assign.reducible); // true
  * console.log(assign.reduce({})); // SDoNothing {}
  */
-export class SAssign extends SReducible {
+export class SAssign extends SReducibleStatement {
   constructor(name: string, expression: SExpression) {
     super();
 
@@ -297,13 +301,13 @@ export class SAssign extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     if (this.expression.reducible) {
-      return [new SAssign(this.name, (this.expression as SReducible).reduce(environment) as SExpression), environment] as [SStatement, SEnvironment];
+      return [new SAssign(this.name, (this.expression as SReducibleExpression).reduce(environment)), environment];
     } else {
       const newEnvironment = { ...environment };
       newEnvironment[this.name] = this.expression;
-      return [new SDoNothing(), newEnvironment] as [SStatement, SEnvironment];
+      return [new SDoNothing(), newEnvironment];
     }
   }
 }
@@ -325,7 +329,7 @@ export class SAssign extends SReducible {
  * console.log(ifStatement.reducible); // true
  * console.log(ifStatement.reduce({})); // SAssign { name: 'x', expression: SNumber { value: 5 } }
  */
-export class SIf extends SReducible {
+export class SIf extends SReducibleStatement {
   constructor(condition: SExpression, consequence: SStatement, alternative: SStatement) {
     super();
 
@@ -346,13 +350,13 @@ export class SIf extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     if (this.condition.reducible) {
-      return [new SIf((this.condition as SReducible).reduce(environment) as SExpression, this.consequence, this.alternative), environment] as [SStatement, SEnvironment];
+      return [new SIf((this.condition as SReducibleExpression).reduce(environment), this.consequence, this.alternative), environment];
     } else {
       return (this.condition as SBoolean).value === new SBoolean(true).value
-        ? [this.consequence, environment] as [SStatement, SEnvironment]
-        : [this.alternative, environment] as [SStatement, SEnvironment];
+        ? [this.consequence, environment]
+        : [this.alternative, environment];
     }
   }
 }
@@ -373,7 +377,7 @@ export class SIf extends SReducible {
  * console.log(sequence.reducible); // true
  * console.log(sequence.reduce({})); // [SAssign { name: 'x', expression: SNumber { value: 5 } }, {}]
  */
-export class SSequence extends SReducible {
+export class SSequence extends SReducibleStatement {
   constructor(first: SStatement, second: SStatement) {
     super();
 
@@ -392,12 +396,12 @@ export class SSequence extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
+  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     if (this.first instanceof SDoNothing) {
-      return [this.second, environment] as [SStatement, SEnvironment];
+      return [this.second, environment];
     } else {
-      const [first, newEnvironment] = (this.first as SReducible).reduce(environment) as [SStatement, SEnvironment];
-      return [new SSequence(first, this.second), newEnvironment] as [SStatement, SEnvironment];
+      const [first, newEnvironment] = (this.first as SReducibleStatement).reduce(environment);
+      return [new SSequence(first, this.second), newEnvironment];
     }
   }
 }
@@ -418,7 +422,7 @@ export class SSequence extends SReducible {
  * console.log(whileStatement.reducible); // true
  * console.log(whileStatement.reduce({})); // SIf { condition: SLessThan { left: SVariable { name: 'x' }, right: SNumber { value: 5 } }, consequence: SAssign { name: 'x', expression: SAdd { left: SVariable { name: 'x' }, right: SNumber { value: 1 } } }, alternative: SDoNothing {} }
  */
-export class SWhile extends SReducible {
+export class SWhile extends SReducibleStatement {
   constructor(condition: SExpression, body: SStatement) {
     super();
 
@@ -437,8 +441,8 @@ export class SWhile extends SReducible {
     return true;
   }
 
-  public reduce(environment: SEnvironment) {
-    return [new SIf(this.condition, new SSequence(this.body, this), new SDoNothing()), environment] as [SStatement, SEnvironment];
+  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
+    return [new SIf(this.condition, new SSequence(this.body, this), new SDoNothing()), environment];
   }
 }
 
@@ -479,7 +483,7 @@ export class SExpressionMachine {
   environment: SEnvironment;
 
   public step() {
-    this.expression = (this.expression as SReducible).reduce(this.environment) as SExpression;
+    this.expression = (this.expression as SReducibleExpression).reduce(this.environment);
   }
 
   public run() {
@@ -531,7 +535,7 @@ export class SStatementMachine {
   environment: SEnvironment;
 
   public step() {
-    const [statement, environment] = (this.statement as SReducible).reduce(this.environment) as [SStatement, SEnvironment];
+    const [statement, environment] = (this.statement as SReducibleStatement).reduce(this.environment);
     this.statement = statement;
     this.environment = environment;
   }
