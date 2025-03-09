@@ -208,3 +208,6 @@ console.log("new SVariable('x').eval(environment) =>", new SVariable("x").eval(e
 console.log("new SAdd(new SVariable('x'), new SNumber(5)).eval(environment) =>", new SAdd(new SVariable("x"), new SNumber(5)).eval(environment));
 console.log("new SMultiply(new SVariable('x'), new SNumber(5)).eval(environment) =>", new SMultiply(new SVariable("x"), new SNumber(5)).eval(environment));
 console.log("new SLessThan(new SVariable('x'), new SNumber(5)).eval(environment) =>", new SLessThan(new SVariable("x"), new SNumber(5)).eval(environment));
+
+console.groupEnd();
+console.groupEnd();
