@@ -31,7 +31,7 @@ export class SNumber {
 
   value: number;
 
-  public toString(): string {
+  toString(): string {
     return `${this.value}`;
   }
 
@@ -60,7 +60,7 @@ export class SBoolean {
 
   value: boolean;
 
-  public toString(): string {
+  toString(): string {
     return `${this.value}`;
   }
 
@@ -93,10 +93,10 @@ export class SAdd extends SReducibleExpression {
     this.right = right;
   }
 
-  private left: SExpression;
-  private right: SExpression;
+  left: SExpression;
+  right: SExpression;
 
-  public toString(): string {
+  toString(): string {
     return `${this.left} + ${this.right}`;
   }
 
@@ -104,7 +104,7 @@ export class SAdd extends SReducibleExpression {
     return true;
   }
 
-  public reduce(environment: SEnvironment): SExpression {
+  reduce(environment: SEnvironment): SExpression {
     if (this.left.reducible) {
       return new SAdd((this.left as SReducibleExpression).reduce(environment), this.right);
     } else if (this.right.reducible) {
@@ -139,10 +139,10 @@ export class SMultiply extends SReducibleExpression {
     this.right = right;
   }
 
-  private left: SExpression;
-  private right: SExpression;
+  left: SExpression;
+  right: SExpression;
 
-  public toString(): string {
+  toString(): string {
     return `${this.left} * ${this.right}`;
   }
 
@@ -150,7 +150,7 @@ export class SMultiply extends SReducibleExpression {
     return true;
   }
 
-  public reduce(environment: SEnvironment): SExpression {
+  reduce(environment: SEnvironment): SExpression {
     if (this.left.reducible) {
       return new SMultiply((this.left as SReducibleExpression).reduce(environment), this.right);
     } else if (this.right.reducible) {
@@ -185,10 +185,10 @@ export class SLessThan extends SReducibleExpression {
     this.right = right;
   }
 
-  private left: SExpression;
-  private right: SExpression;
+  left: SExpression;
+  right: SExpression;
 
-  public toString(): string {
+  toString(): string {
     return `${this.left} < ${this.right}`;
   }
 
@@ -196,7 +196,7 @@ export class SLessThan extends SReducibleExpression {
     return true;
   }
 
-  public reduce(environment: SEnvironment): SExpression {
+  reduce(environment: SEnvironment): SExpression {
     if (this.left.reducible) {
       return new SLessThan((this.left as SReducibleExpression).reduce(environment), this.right);
     } else if (this.right.reducible) {
@@ -231,7 +231,7 @@ export class SVariable extends SReducibleExpression {
 
   name: string;
 
-  public toString(): string {
+  toString(): string {
     return this.name;
   }
 
@@ -239,7 +239,7 @@ export class SVariable extends SReducibleExpression {
     return true;
   }
 
-  public reduce(environment: SEnvironment): SExpression {
+  reduce(environment: SEnvironment): SExpression {
     return environment[this.name];
   }
 }
@@ -257,7 +257,7 @@ export class SVariable extends SReducibleExpression {
  * console.log(doNothing.reducible); // false
  */
 export class SDoNothing {
-  public toString() {
+  toString() {
     return "do-nothing";
   }
 
@@ -293,7 +293,7 @@ export class SAssign extends SReducibleStatement {
   name: string;
   expression: SExpression;
 
-  public toString() {
+  toString() {
     return `${this.name} = ${this.expression}`;
   }
 
@@ -301,7 +301,7 @@ export class SAssign extends SReducibleStatement {
     return true;
   }
 
-  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
+  reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     if (this.expression.reducible) {
       return [new SAssign(this.name, (this.expression as SReducibleExpression).reduce(environment)), environment];
     } else {
@@ -342,7 +342,7 @@ export class SIf extends SReducibleStatement {
   consequence: SStatement;
   alternative: SStatement;
 
-  public toString() {
+  toString() {
     return `if (${this.condition}) { ${this.consequence} } else { ${this.alternative} }`;
   }
 
@@ -350,7 +350,7 @@ export class SIf extends SReducibleStatement {
     return true;
   }
 
-  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
+  reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     if (this.condition.reducible) {
       return [new SIf((this.condition as SReducibleExpression).reduce(environment), this.consequence, this.alternative), environment];
     } else {
@@ -388,7 +388,7 @@ export class SSequence extends SReducibleStatement {
   first: SStatement;
   second: SStatement;
 
-  public toString() {
+  toString() {
     return `${this.first}; ${this.second}`;
   }
 
@@ -396,7 +396,7 @@ export class SSequence extends SReducibleStatement {
     return true;
   }
 
-  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
+  reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     if (this.first instanceof SDoNothing) {
       return [this.second, environment];
     } else {
@@ -433,7 +433,7 @@ export class SWhile extends SReducibleStatement {
   condition: SExpression;
   body: SStatement;
 
-  public toString() {
+  toString() {
     return `while (${this.condition}) { ${this.body} }`;
   }
 
@@ -441,7 +441,7 @@ export class SWhile extends SReducibleStatement {
     return true;
   }
 
-  public reduce(environment: SEnvironment): [SStatement, SEnvironment] {
+  reduce(environment: SEnvironment): [SStatement, SEnvironment] {
     return [new SIf(this.condition, new SSequence(this.body, this), new SDoNothing()), environment];
   }
 }
@@ -482,11 +482,11 @@ export class SExpressionMachine {
   expression: SExpression;
   environment: SEnvironment;
 
-  public step() {
+  step() {
     this.expression = (this.expression as SReducibleExpression).reduce(this.environment);
   }
 
-  public run() {
+  run() {
     console.log("----------------------------------------");
 
     console.log("Expression: ", this.expression);
@@ -534,13 +534,13 @@ export class SStatementMachine {
   statement: SStatement;
   environment: SEnvironment;
 
-  public step() {
+  step() {
     const [statement, environment] = (this.statement as SReducibleStatement).reduce(this.environment);
     this.statement = statement;
     this.environment = environment;
   }
 
-  public run() {
+  run() {
     console.log("----------------------------------------");
 
     console.log("Statement: ", this.statement);
@@ -556,3 +556,69 @@ export class SStatementMachine {
     console.log("----------------------------------------");
   }
 }
+
+const environment: SEnvironment = {
+  x: new SNumber(5),
+  y: new SNumber(10),
+};
+
+console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Small-Step Semantics");
+console.group("Expressions");
+
+const numericExpression: SExpression = new SAdd(
+  new SMultiply(new SNumber(2), new SNumber(2)),
+  new SMultiply(new SNumber(8), new SNumber(8))
+);
+
+const booleanExpression: SExpression = new SLessThan(
+  new SMultiply(new SNumber(2), new SNumber(2)),
+  new SMultiply(new SNumber(8), new SNumber(8))
+);
+
+const variableExpression: SExpression = new SAdd(
+  new SVariable("x"),
+  new SVariable("y"),
+);
+
+function runExpressionMachine(expression: SExpression, environment: SEnvironment) {
+  const machine = new SExpressionMachine(expression, environment);
+  machine.run();
+}
+
+runExpressionMachine(numericExpression, environment);
+runExpressionMachine(booleanExpression, environment);
+runExpressionMachine(variableExpression, environment);
+
+console.groupEnd();
+console.group("Statements");
+
+const assignStatement: SStatement = new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y")));
+
+const ifStatement: SStatement = new SIf(
+  new SLessThan(new SVariable("x"), new SVariable("y")),
+  new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y"))),
+  new SAssign("z", new SAdd(new SVariable("y"), new SVariable("x"))),
+);
+
+const sequenceStatement: SStatement = new SSequence(
+  new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y"))),
+  new SAssign("z", new SAdd(new SVariable("z"), new SVariable("z"))),
+);
+
+const whileStatement: SStatement = new SWhile(
+  new SLessThan(new SVariable("x"), new SVariable("y")),
+  new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1))),
+);
+
+function runStatementMachine(statement: SStatement, environment: SEnvironment) {
+  const machine = new SStatementMachine(statement, environment);
+  machine.run();
+}
+
+runStatementMachine(assignStatement, environment);
+runStatementMachine(ifStatement, environment);
+runStatementMachine(sequenceStatement, environment);
+runStatementMachine(whileStatement, environment);
+
+console.groupEnd();
+console.groupEnd();
