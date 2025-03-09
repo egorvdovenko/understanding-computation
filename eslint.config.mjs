@@ -9,5 +9,5 @@ export default [
   {languageOptions: { globals: globals.browser }},
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  {rules: { quotes: ["error", "double"], semi: ["error", "always"] }}
+  {rules: { quotes: ["error", "double"], semi: ["error", "always"], indent: ["error", 2]}},
 ];

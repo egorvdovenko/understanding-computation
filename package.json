@@ -2,8 +2,8 @@
   "name": "understanding-computation",
   "version": "1.0.0",
   "scripts": {
-    "exec": "ts-node ./index.ts",
-    "test": "jest",
+    "exec": "ts-node",
+    "test": "jest --silent",
     "lint": "eslint . --ext .ts"
   },
   "author": "",
