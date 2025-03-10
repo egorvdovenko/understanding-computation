@@ -563,6 +563,9 @@ const environment: SEnvironment = {
 };
 
 console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Small-Step Semantics");
+
+console.log("Environment: ", environment);
+
 console.group("Expressions");
 
 const numericExpression: SExpression = new SAdd(

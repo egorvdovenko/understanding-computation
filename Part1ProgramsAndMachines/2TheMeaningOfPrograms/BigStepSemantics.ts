@@ -1,4 +1,5 @@
 export type SExpression = SNumber | SBoolean | SVariable | SAdd | SMultiply | SLessThan;
+export type SStatement = SAssign | SDoNothing | SIf;
 
 export type SEnvironment = Record<string, number | boolean>;
 
@@ -193,21 +194,187 @@ export class SLessThan {
   }
 }
 
+/**
+ * Represents an assignment statement in the big-step semantics.
+ * 
+ * @class SAssign
+ * @property {string} name - The name of the variable.
+ * @property {SExpression} expression - The expression to assign to the variable.
+ * @method eval - Returns the environment with the variable assigned to the expression.
+ * @method toString - Returns the string representation of the assignment expression.
+ * 
+ * @example
+ * const assign = new SAssign("x", new SNumber(5));
+ * console.log(assign.eval({})); // { x: 5 }
+ * console.log(assign.toString()); // "x = 5"
+ */
+export class SAssign {
+  constructor(name: string, expression: SExpression) {
+    this.name = name;
+    this.expression = expression;
+  }
+
+  name: string;
+  expression: SExpression;
+
+  eval(environment: SEnvironment): SEnvironment {
+    return { ...environment, [this.name]: this.expression.eval(environment) };
+  }
+
+  toString(): string {
+    return `${this.name} = ${this.expression.toString()}`;
+  }
+}
+
+/**
+ * Represents a do-nothing statemet in the big-step semantics.
+ * 
+ * @class SDoNothing
+ * @method eval - Returns the environment without any changes.
+ * @method toString - Returns the string representation of the do-nothing statement.
+ * 
+ * @example
+ * const doNothing = new SDoNothing();
+ * console.log(doNothing.eval({ x: 5 })); // { x: 5 }
+ */
+export class SDoNothing {
+  eval(environment: SEnvironment): SEnvironment {
+    return environment;
+  }
+
+  toString(): string {
+    return "do-nothing";
+  }
+}
+
+/**
+ * Represents an if statement in the big-step semantics.
+ * 
+ * @class SIf
+ * @property {SExpression} condition - The condition to evaluate.
+ * @property {SStatement} consequence - The statement to execute if the condition is true.
+ * @property {SStatement} alternative - The statement to execute if the condition is false.
+ * @method eval - Returns the environment after executing the consequence or alternative statement.
+ * @method toString - Returns the string representation of the if statement.
+ * 
+ * @example
+ * const ifStatement = new SIf(new SLessThan(new SVariable("x"), new SNumber(10)), new SAssign("y", new SNumber(10)), new SDoNothing());
+ * console.log(ifStatement.eval({ x: 5 })); // { x: 5, y: 10 }
+ * console.log(ifStatement.toString()); // "if (x < 10) { y = 10 } else { do-nothing }"
+ */
+export class SIf {
+  constructor(condition: SExpression, consequence: SStatement, alternative: SStatement) {
+    this.condition = condition;
+    this.consequence = consequence;
+    this.alternative = alternative;
+  }
+
+  condition: SExpression;
+  consequence: SStatement;
+  alternative: SStatement;
+
+  eval(environment: SEnvironment): SEnvironment {
+    return this.condition.eval(environment)  === new SBoolean(true).value 
+      ? this.consequence.eval(environment) 
+      : this.alternative.eval(environment);
+  }
+
+  toString(): string {
+    return `if (${this.condition.toString()}) { ${this.consequence.toString()} } else { ${this.alternative.toString()} }`;
+  }
+}
+
+/**
+ * Represents a sequence of statements in the big-step semantics.
+ * 
+ * @class SSequence
+ * @property {SStatement} first - The first statement to execute.
+ * @property {SStatement} second - The second statement to execute.
+ * @method eval - Returns the environment after executing the second statement.
+ * @method toString - Returns the string representation of the sequence of statements.
+ * 
+ * @example
+ * const sequence = new SSequence(new SAssign("x", new SNumber(5)), new SAssign("y", new SNumber(10)));
+ * console.log(sequence.eval({})); // { x: 5, y: 10 }
+ * console.log(sequence.toString()); // "x = 5; y = 10"
+ */
+export class SSequence {
+  constructor(first: SStatement, second: SStatement) {
+    this.first = first;
+    this.second = second;
+  }
+
+  first: SStatement;
+  second: SStatement;
+
+  eval(environment: SEnvironment): SEnvironment {
+    return this.second.eval(this.first.eval(environment));
+  }
+
+  toString(): string {
+    return `${this.first.toString()}; ${this.second.toString()}`;
+  }
+}
+
+export class SWhile {
+  constructor(condition: SExpression, body: SStatement) {
+    this.condition = condition;
+    this.body = body;
+  }
+
+  condition: SExpression;
+  body: SStatement;
+
+  eval(environment: SEnvironment): SEnvironment {
+    return this.condition.eval(environment) === new SBoolean(true).value 
+      ? this.eval(this.body.eval(environment)) 
+      : environment;
+  }
+
+  toString(): string {
+    return `while (${this.condition.toString()}) { ${this.body.toString()} }`;
+  }
+}
+
 const environment: SEnvironment = {
   x: new SNumber(5).value,
   y: new SNumber(10).value,
 };
 
 console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Big-Step Semantics");
+
+console.log("Environment: ", environment);
+
 console.group("Expressions");
 
-console.log("environment =>", environment);
-console.log("new SNumber(5).value =>", new SNumber(5).value);
-console.log("new SBoolean(true).value =>", new SBoolean(true).value);
-console.log("new SVariable('x').eval(environment) =>", new SVariable("x").eval(environment));
-console.log("new SAdd(new SVariable('x'), new SNumber(5)).eval(environment) =>", new SAdd(new SVariable("x"), new SNumber(5)).eval(environment));
-console.log("new SMultiply(new SVariable('x'), new SNumber(5)).eval(environment) =>", new SMultiply(new SVariable("x"), new SNumber(5)).eval(environment));
-console.log("new SLessThan(new SVariable('x'), new SNumber(5)).eval(environment) =>", new SLessThan(new SVariable("x"), new SNumber(5)).eval(environment));
+console.log("----------------------------------------");
+console.log("SNumber(5): ", new SNumber(5).value);
+console.log("----------------------------------------");
+console.log("SBoolean(true): ", new SBoolean(true).value);
+console.log("----------------------------------------");
+console.log("SVariable('x'): ", new SVariable("x").eval(environment));
+console.log("----------------------------------------");
+console.log("SAdd(new SVariable('x'), new SNumber(5)): ", new SAdd(new SVariable("x"), new SNumber(5)).eval(environment));
+console.log("----------------------------------------");
+console.log("SMultiply(new SVariable('x'), new SNumber(5)): ", new SMultiply(new SVariable("x"), new SNumber(5)).eval(environment));
+console.log("----------------------------------------");
+console.log("SLessThan(new SVariable('x'), new SNumber(5)): ", new SLessThan(new SVariable("x"), new SNumber(5)).eval(environment));
+console.log("----------------------------------------");
+
+console.groupEnd();
+console.group("Statements");
+
+console.log("----------------------------------------");
+console.log("SAssign('x', new SNumber(5)): ", new SAssign("x", new SNumber(5)).eval(environment));
+console.log("----------------------------------------");
+console.log("SDoNothing(): ", new SDoNothing().eval(environment));
+console.log("----------------------------------------");
+console.log("SIf(new SLessThan(new SVariable('x'), new SNumber(10)), new SAssign('y', new SNumber(10)), new SDoNothing()).eval(environment))", new SIf(new SLessThan(new SVariable("x"), new SNumber(10)), new SAssign("y", new SNumber(10)), new SDoNothing()).eval(environment));
+console.log("----------------------------------------");
+console.log("SSequence(new SAssign('x', new SNumber(10)), new SAssign('z', new SAdd(new SVariable('x'), new SVariable('y'))))", new SSequence(new SAssign("x", new SNumber(10)), new SAssign("z", new SAdd(new SVariable("x"), new SVariable("y")))).eval(environment));
+console.log("----------------------------------------");
+console.log("SWhile(new SLessThan(new SVariable('x'), new SNumber(10)), new SAssign('x', new SAdd(new SVariable('x'), new SNumber(1))))", new SWhile(new SLessThan(new SVariable("x"), new SNumber(10)), new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1)))).eval(environment));
+console.log("----------------------------------------");
 
 console.groupEnd();
 console.groupEnd();
