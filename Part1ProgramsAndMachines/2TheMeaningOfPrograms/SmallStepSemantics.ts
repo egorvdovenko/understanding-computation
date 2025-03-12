@@ -625,3 +625,24 @@ runStatementMachine(whileStatement, environment);
 
 console.groupEnd();
 console.groupEnd();
+
+console.group("Example: Factorial");
+
+const factorialStatement: SStatement = new SSequence(
+  new SAssign("result", new SNumber(1)),
+  new SWhile(
+    new SLessThan(new SNumber(1), new SVariable("x")),
+    new SSequence(
+      new SAssign("result", new SMultiply(new SVariable("result"), new SVariable("x"))),
+      new SAssign("x", new SAdd(new SVariable("x"), new SNumber(-1))),
+    ),
+  ),
+);
+
+const factorialEnvironment: SEnvironment = {
+  x: new SNumber(5),
+};
+
+runStatementMachine(factorialStatement, factorialEnvironment);
+
+console.groupEnd();

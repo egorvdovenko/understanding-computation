@@ -378,3 +378,20 @@ console.log("----------------------------------------");
 
 console.groupEnd();
 console.groupEnd();
+
+console.group("Example: Factorial");
+
+const factorial = new SSequence(
+  new SAssign("result", new SNumber(1)),
+  new SWhile(
+    new SLessThan(new SNumber(0), new SVariable("n")),
+    new SSequence(
+      new SAssign("result", new SMultiply(new SVariable("result"), new SVariable("n"))),
+      new SAssign("n", new SAdd(new SVariable("n"), new SNumber(-1)))
+    )
+  )
+);
+
+console.log("Factorial(5): ", factorial.eval({ n: 5 }));
+
+console.groupEnd();
