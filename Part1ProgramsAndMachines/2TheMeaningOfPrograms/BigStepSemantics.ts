@@ -1,3 +1,20 @@
+/**
+ * Big-Step Semantics
+ * 
+ * The small-step approach has the advantage of slicing up the complex business of executing an entire program into smaller pieces that are easier to explain and analyze, but
+ * it does feel a bit indirect: instead of explaining how a whole program construct works,
+ * we just show how it can be reduced slightly. Why can’t we explain a statement more
+ * directly, by telling a complete story about how its execution works? Well, we can, and
+ * that’s the basis of big-step semantics.
+ * 
+ * The idea of big-step semantics is to specify how to get from an expression or statement
+ * straight to its result. This necessarily involves thinking about program execution as a
+ * recursive rather than an iterative process: big-step semantics says that, to evaluate a
+ * large expression, we evaluate all of its smaller subexpressions and then combine their
+ * results to get our final answer.
+ */
+
+
 export type SExpression = SNumber | SBoolean | SVariable | SAdd | SMultiply | SLessThan;
 export type SStatement = SAssign | SDoNothing | SIf;
 
@@ -23,7 +40,8 @@ export class SNumber {
 
   value: number;
 
-  eval(): number {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  eval(environment: SEnvironment): number {
     return this.value;
   }
 
@@ -52,7 +70,8 @@ export class SBoolean {
 
   value: boolean;
 
-  eval(): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  eval(environment: SEnvironment): boolean {
     return this.value;
   }
 
@@ -274,7 +293,7 @@ export class SIf {
   alternative: SStatement;
 
   eval(environment: SEnvironment): SEnvironment {
-    return this.condition.eval(environment)  === new SBoolean(true).value 
+    return this.condition.eval(environment) === new SBoolean(true).value 
       ? this.consequence.eval(environment) 
       : this.alternative.eval(environment);
   }
@@ -349,15 +368,10 @@ console.group("Expressions");
 
 console.log("----------------------------------------");
 console.log("SNumber(5): ", new SNumber(5).value);
-console.log("----------------------------------------");
 console.log("SBoolean(true): ", new SBoolean(true).value);
-console.log("----------------------------------------");
 console.log("SVariable('x'): ", new SVariable("x").eval(environment));
-console.log("----------------------------------------");
 console.log("SAdd(new SVariable('x'), new SNumber(5)): ", new SAdd(new SVariable("x"), new SNumber(5)).eval(environment));
-console.log("----------------------------------------");
 console.log("SMultiply(new SVariable('x'), new SNumber(5)): ", new SMultiply(new SVariable("x"), new SNumber(5)).eval(environment));
-console.log("----------------------------------------");
 console.log("SLessThan(new SVariable('x'), new SNumber(5)): ", new SLessThan(new SVariable("x"), new SNumber(5)).eval(environment));
 console.log("----------------------------------------");
 

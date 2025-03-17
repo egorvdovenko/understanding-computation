@@ -21,7 +21,7 @@ describe("BigStepSemantics", () => {
 
     it("should evaluate to the correct number", () => {
       const num = new SNumber(5);
-      expect(num.eval()).toBe(5);
+      expect(num.eval({})).toBe(5);
     });
 
     it("should return the correct string representation", () => {
@@ -38,7 +38,7 @@ describe("BigStepSemantics", () => {
 
     it("should evaluate to the correct boolean", () => {
       const bool = new SBoolean(true);
-      expect(bool.eval()).toBe(true);
+      expect(bool.eval({})).toBe(true);
     });
 
     it("should return the correct string representation", () => {
