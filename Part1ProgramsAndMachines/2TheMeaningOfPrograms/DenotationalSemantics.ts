@@ -376,7 +376,6 @@ console.log("SLessThan(new SNumber(5), new SNumber(3)): ", eval(new SLessThan(ne
 console.log("----------------------------------------");
 
 console.groupEnd();
-
 console.group("Statements");
 
 console.log("----------------------------------------");
@@ -388,5 +387,21 @@ console.log("SWhile(new SLessThan(new SVariable(\"x\"), new SNumber(10)), new SA
 console.log("----------------------------------------");
 
 console.groupEnd();
+console.groupEnd();
+
+console.group("Example: Factorial");
+
+const factorial = new SSequence(
+  new SAssign("result", new SNumber(1)),
+  new SWhile(
+    new SLessThan(new SNumber(0), new SVariable("x")),
+    new SSequence(
+      new SAssign("result", new SMultiply(new SVariable("result"), new SVariable("x"))),
+      new SAssign("x", new SAdd(new SVariable("x"), new SNumber(-1)))
+    )
+  )
+);
+
+console.log("Factorial(5): ", eval(factorial.toJS())({ x: 5 }));
 
 console.groupEnd();

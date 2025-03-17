@@ -345,7 +345,7 @@ export class SWhile {
   body: SStatement;
 
   eval(environment: SEnvironment): SEnvironment {
-    return this.condition.eval(environment) === new SBoolean(true).value 
+    return this.condition.eval(environment)
       ? this.eval(this.body.eval(environment)) 
       : environment;
   }
