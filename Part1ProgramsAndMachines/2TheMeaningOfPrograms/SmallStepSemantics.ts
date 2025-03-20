@@ -104,10 +104,8 @@ export class SBoolean {
  * console.log(add.reducible); // true
  * console.log(add.reduce({})); // SNumber { value: 10 }
  */
-export class SAdd extends SReducibleExpression {
+export class SAdd implements SReducibleExpression {
   constructor(left: SExpression, right: SExpression) {
-    super();
-
     this.left = left;
     this.right = right;
   }
@@ -150,10 +148,8 @@ export class SAdd extends SReducibleExpression {
  * console.log(multiply.reducible); // true
  * console.log(multiply.reduce({})); // SNumber { value: 25 }
  */
-export class SMultiply extends SReducibleExpression {
+export class SMultiply implements SReducibleExpression {
   constructor(left: SExpression, right: SExpression) {
-    super();
-
     this.left = left;
     this.right = right;
   }
@@ -196,10 +192,8 @@ export class SMultiply extends SReducibleExpression {
  * console.log(lessThan.reducible); // true
  * console.log(lessThan.reduce({})); // SBoolean { value: true }
  */
-export class SLessThan extends SReducibleExpression {
+export class SLessThan implements SReducibleExpression {
   constructor(left: SExpression, right: SExpression) {
-    super();
-
     this.left = left;
     this.right = right;
   }
@@ -241,10 +235,8 @@ export class SLessThan extends SReducibleExpression {
  * console.log(variable.reducible); // true
  * console.log(variable.reduce({ x: new SNumber(5) })); // SNumber { value: 5 }
  */
-export class SVariable extends SReducibleExpression {
+export class SVariable implements SReducibleExpression {
   constructor(name: string) {
-    super();
-
     this.name = name;
   }
 
@@ -301,10 +293,8 @@ export class SDoNothing {
  * console.log(assign.reducible); // true
  * console.log(assign.reduce({})); // SDoNothing {}
  */
-export class SAssign extends SReducibleStatement {
+export class SAssign implements SReducibleStatement {
   constructor(name: string, expression: SExpression) {
-    super();
-
     this.name = name;
     this.expression = expression;
   }
@@ -348,10 +338,8 @@ export class SAssign extends SReducibleStatement {
  * console.log(ifStatement.reducible); // true
  * console.log(ifStatement.reduce({})); // SAssign { name: 'x', expression: SNumber { value: 5 } }
  */
-export class SIf extends SReducibleStatement {
+export class SIf implements SReducibleStatement {
   constructor(condition: SExpression, consequence: SStatement, alternative: SStatement) {
-    super();
-
     this.condition = condition;
     this.consequence = consequence;
     this.alternative = alternative;
@@ -396,10 +384,8 @@ export class SIf extends SReducibleStatement {
  * console.log(sequence.reducible); // true
  * console.log(sequence.reduce({})); // [SAssign { name: 'x', expression: SNumber { value: 5 } }, {}]
  */
-export class SSequence extends SReducibleStatement {
+export class SSequence implements SReducibleStatement {
   constructor(first: SStatement, second: SStatement) {
-    super();
-
     this.first = first;
     this.second = second;
   }
@@ -441,10 +427,8 @@ export class SSequence extends SReducibleStatement {
  * console.log(whileStatement.reducible); // true
  * console.log(whileStatement.reduce({})); // SIf { condition: SLessThan { left: SVariable { name: 'x' }, right: SNumber { value: 5 } }, consequence: SAssign { name: 'x', expression: SAdd { left: SVariable { name: 'x' }, right: SNumber { value: 1 } } }, alternative: SDoNothing {} }
  */
-export class SWhile extends SReducibleStatement {
+export class SWhile implements SReducibleStatement {
   constructor(condition: SExpression, body: SStatement) {
-    super();
-
     this.condition = condition;
     this.body = body;
   }
