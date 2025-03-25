@@ -154,10 +154,20 @@ export class DFADesign {
   }    
 }
 
+console.group("Part 1: Programs and Machines => 3. The Simplest Computers => Deterministic Finite Automata");
+
 const rule1 = new FARule(0, "a", 1);
 const rule2 = new FARule(0, "b", 0);
 const rule3 = new FARule(1, "b", 2);
+
+console.log("rule1: ", rule1.toString());
+console.log("rule2: ", rule2.toString());
+console.log("rule3: ", rule3.toString());
+
 const rulebook = new DFARulebook([rule1, rule2, rule3]);
 const dfaDesign = new DFADesign(0, [2], rulebook);
-console.log(dfaDesign.accepts("ab"));
-console.log(dfaDesign.accepts("ba"));
+
+console.log("ab: ", dfaDesign.accepts("ab"));
+console.log("ba: ", dfaDesign.accepts("ba"));
+
+console.groupEnd();
