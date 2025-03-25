@@ -1,20 +1,3 @@
-/**
- * Big-Step Semantics
- * 
- * The small-step approach has the advantage of slicing up the complex business of executing an entire program into smaller pieces that are easier to explain and analyze, but
- * it does feel a bit indirect: instead of explaining how a whole program construct works,
- * we just show how it can be reduced slightly. Why can’t we explain a statement more
- * directly, by telling a complete story about how its execution works? Well, we can, and
- * that’s the basis of big-step semantics.
- * 
- * The idea of big-step semantics is to specify how to get from an expression or statement
- * straight to its result. This necessarily involves thinking about program execution as a
- * recursive rather than an iterative process: big-step semantics says that, to evaluate a
- * large expression, we evaluate all of its smaller subexpressions and then combine their
- * results to get our final answer.
- */
-
-
 export type SExpression = SNumber | SBoolean | SVariable | SAdd | SMultiply | SLessThan;
 export type SStatement = SAssign | SDoNothing | SIf;
 

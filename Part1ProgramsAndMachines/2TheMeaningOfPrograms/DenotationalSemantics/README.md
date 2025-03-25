@@ -1,0 +1,3 @@
+# Denotational Semantics
+
+Denotational semantics is necessarily a more abstract approach than expressional, because it just replaces one language with another instead of turning a language into real behavior. For example, if we needed to explain the meaning of the English verb “walk” to a person with whom we had no spoken language in common, we could communicate it expressionally by actually walking back and forth. On the other hand, if we needed to explain “walk” to a French speaker, we could do so denotationally just by telling them the French verb “marcher”—an undeniably higher level form of communication, no messy exercise required.
