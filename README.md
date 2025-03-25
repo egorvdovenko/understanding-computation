@@ -10,3 +10,5 @@ Finally, you can learn computation theory and programming language design in an 
 * Determine which programming language features are essential for computation
 * Examine how halting and self-referencing make some computing problems unsolvable
 * Analyze programs by using abstract interpretation and type systems
+
+Copyright © 2013 Tom Stuart
