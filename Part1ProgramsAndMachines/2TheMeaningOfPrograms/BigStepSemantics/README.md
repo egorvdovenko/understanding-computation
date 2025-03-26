@@ -1,5 +1,17 @@
 # Big-Step Semantics
 
-The small-step approach has the advantage of slicing up the complex business of executing an entire program into smaller pieces that are easier to explain and analyze, but it does feel a bit indirect: instead of explaining how a whole program construct works, we just show how it can be reduced slightly. Why can’t we explain a statement more directly, by telling a complete story about how its execution works? Well, we can, andthat’s the basis of big-step semantics.
+**Big-Step Semantics** is a formal approach to defining the meaning of programs by describing how entire computations are evaluated in a single step. It focuses on the final result of a computation rather than the intermediate steps.
 
-The idea of big-step semantics is to specify how to get from an expression or statement straight to its result. This necessarily involves thinking about program execution as a recursive rather than an iterative process: big-step semantics says that, to evaluate a large expression, we evaluate all of its smaller subexpressions and then combine their results to get our final answer.
+### Key Concepts:
+1. **Evaluation**: Expressions and statements are evaluated directly to their final values or resulting environments.
+2. **Environment**: A mapping of variable names to their values, which provides context for evaluating expressions and statements.
+3. **Expressions and Statements**:
+   - **Expressions**: Represent computations that produce values (e.g., arithmetic or boolean operations).
+   - **Statements**: Represent actions that modify the environment (e.g., assignments, conditionals, loops).
+
+### Characteristics:
+- **Direct Evaluation**: The semantics describe how to evaluate a program to its final result in one "big step."
+- **Abstract**: Focuses on the outcome of computation rather than the process.
+- **Deterministic**: The result of evaluation is uniquely determined by the program and its input.
+
+Big-step semantics is widely used in programming language theory to define the meaning of programs in a concise and abstract way.
