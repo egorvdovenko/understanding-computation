@@ -5,9 +5,8 @@
 ### Key Concepts:
 1. **Evaluation**: Expressions and statements are evaluated directly to their final values or resulting environments.
 2. **Environment**: A mapping of variable names to their values, which provides context for evaluating expressions and statements.
-3. **Expressions and Statements**:
-   - **Expressions**: Represent computations that produce values (e.g., arithmetic or boolean operations).
-   - **Statements**: Represent actions that modify the environment (e.g., assignments, conditionals, loops).
+3. **Expressions**: Represent computations that produce values (e.g., arithmetic or boolean operations).
+4. **Statements**: Represent actions that modify the environment (e.g., assignments, conditionals, loops).
 
 ### Characteristics:
 - **Direct Evaluation**: The semantics describe how to evaluate a program to its final result in one "big step."
