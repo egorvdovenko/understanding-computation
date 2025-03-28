@@ -30,11 +30,11 @@ export class FARule {
     return this.state === state && this.character === character;
   }
 
-  follow() {
+  follow(): number {
     return this.nextState;
   }
 
-  toString() {
+  toString(): string {
     return `${this.state} -> ${this.character} -> ${this.nextState}`;
   }
 }
@@ -68,6 +68,10 @@ export class DFARulebook {
   ruleFor(state: number, character: string): FARule {
     return this.rules.find((rule) => rule.appliesTo(state, character))!;
   }
+
+  toString(): string {
+    return this.rules.map((rule) => rule.toString()).join("\n");
+  }
 }
 
 /**
@@ -98,7 +102,7 @@ export class DFA {
   acceptStates: number[];
   rulebook: DFARulebook;
 
-  accepting() {
+  accepting(): boolean {
     return this.acceptStates.includes(this.currentState);
   }
 
@@ -143,11 +147,11 @@ export class DFADesign {
   acceptStates: number[];
   rulebook: DFARulebook;
 
-  toDFA() {
+  toDFA(): DFA {
     return new DFA(this.startState, this.acceptStates, this.rulebook);
   }
 
-  accepts(input: string) {
+  accepts(input: string): boolean {
     const dfa = this.toDFA();
     dfa.readString(input);
     return dfa.accepting();
@@ -160,14 +164,15 @@ const rule1 = new FARule(0, "a", 1);
 const rule2 = new FARule(0, "b", 0);
 const rule3 = new FARule(1, "b", 2);
 
-console.log("rule1: ", rule1.toString());
-console.log("rule2: ", rule2.toString());
-console.log("rule3: ", rule3.toString());
-
 const rulebook = new DFARulebook([rule1, rule2, rule3]);
+
+console.log("Rulebook: ", rulebook.toString());
+
 const dfaDesign = new DFADesign(0, [2], rulebook);
 
-console.log("ab: ", dfaDesign.accepts("ab"));
-console.log("ba: ", dfaDesign.accepts("ba"));
+console.log("Input: ab");
+console.log("Accepts: ", dfaDesign.accepts("ab"));
+console.log("Input: ba");
+console.log("Accepts: ", dfaDesign.accepts("ba"));
 
 console.groupEnd();

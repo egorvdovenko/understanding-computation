@@ -13,11 +13,11 @@ export class FARule {
     return this.state === state && this.character === character;
   }
 
-  follow() {
+  follow(): number {
     return this.nextState;
   }
 
-  toString() {
+  toString(): string {
     return `${this.state} -> ${this.character} -> ${this.nextState}`;
   }
 }
@@ -30,15 +30,25 @@ export class NFARulebook {
   rules: FARule[];
 
   nextStates(states: Set<number>, character: string): Set<number> {
-    return new Set(Array.from(states).flatMap((state: number) => this.followRulesFor(state, character)));
+    const result = new Set(Array.from(states).flatMap((state: number) => this.followRulesFor(state, character)));
+    console.log("nextStates: ", result);
+    return result;
   }
 
   followRulesFor(state: number, character: string): number[] {
-    return this.rulesFor(state, character).map((rule: FARule) => rule.follow());
+    const result = this.rulesFor(state, character).map((rule: FARule) => rule.follow());
+    console.log("followRulesFor: ", result);
+    return result;
   }
 
   rulesFor(state: number, character: string): FARule[] {
-    return this.rules.filter((rule: FARule) => rule.appliesTo(state, character));
+    const result = this.rules.filter((rule: FARule) => rule.appliesTo(state, character));
+    console.log("rulesFor: ", result);
+    return result;
+  }
+
+  toString(): string {
+    return this.rules.map((rule: FARule) => rule.toString()).join("\n");
   }
 }
 
@@ -57,14 +67,37 @@ export class NFA {
     return Array.from(this.currentStates).some((state: number) => this.acceptStates.includes(state));
   }
 
-  readCharacter(character: string): void {
+  readCharacter(character: string) {
+    console.log("currentStates: ", this.currentStates);
     this.currentStates = this.rulebook.nextStates(this.currentStates, character);
   }
 
-  readString(string: string): void {
+  readString(string: string) {
     for (const character of string) {
       this.readCharacter(character);
     }
+  }
+}
+
+export class NFADesign {
+  constructor(startState: number, acceptStates: number[], rulebook: NFARulebook) {
+    this.startState = startState;
+    this.acceptStates = acceptStates;
+    this.rulebook = rulebook;
+  }
+
+  startState: number;
+  acceptStates: number[];
+  rulebook: NFARulebook;
+
+  accepts(string: string): boolean {
+    const nfa = this.toNFA();
+    nfa.readString(string);
+    return nfa.accepting();
+  }
+
+  toNFA(): NFA {
+    return new NFA(new Set([this.startState]), this.acceptStates, this.rulebook);
   }
 }
 
@@ -76,13 +109,34 @@ const rulebook = new NFARulebook([
   new FARule(3, "a", 4), new FARule(3, "b", 4)
 ]);
 
+console.log("Rulebook: ", rulebook.toString());
+
+console.log("----------------------------------------");
 const nfa = new NFA(new Set([1]), [4], rulebook);
-console.log(nfa.accepting());
+console.log("Input: b");
 nfa.readCharacter("b");
-console.log(nfa.accepting());
+console.log("Accepting: ", nfa.accepting());
+console.log("Input: a");
 nfa.readCharacter("a");
-console.log(nfa.accepting());
+console.log("Accepting: ", nfa.accepting());
+console.log("Input: b");
 nfa.readCharacter("b");
-console.log(nfa.accepting());
+console.log("Accepting: ", nfa.accepting());
+console.log("----------------------------------------");
+
+console.log("----------------------------------------");
+const nfa2 = new NFA(new Set([1]), [4], rulebook);
+console.log("Input: bbbbb");
+nfa2.readString("bbbbb");
+console.log("Accepting: ", nfa2.accepting());
+console.log("----------------------------------------");
+
+console.log("----------------------------------------");
+const nfaDesign = new NFADesign(1, [4], rulebook);
+console.log("Input: bbbbb");
+console.log("Accepting: ", nfaDesign.accepts("bbbbb"));
+console.log("Input: babb");
+console.log("Accepting: ", nfaDesign.accepts("babb"));
+console.log("----------------------------------------");
 
 console.groupEnd();
