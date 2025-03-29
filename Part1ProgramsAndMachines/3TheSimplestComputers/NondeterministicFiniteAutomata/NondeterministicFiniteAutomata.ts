@@ -72,7 +72,6 @@ export class NFARulebook {
 
   nextStates(states: Set<number>, character: string): Set<number> {
     const result = new Set(Array.from(states).flatMap((state: number) => this.followRulesFor(state, character)));
-    console.log("nextStates: ", result);
     return result;
   }
 
