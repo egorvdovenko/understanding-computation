@@ -131,3 +131,6 @@ dist
 
 # macOS
 .DS_Store
+
+# TypeScript build
+build
