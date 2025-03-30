@@ -1,49 +1,11 @@
-/**
- * Represents a rule in the Finite Automata (FA) system.
- *
- * @class FARule
- * @property {string} state - The current state of the FA.
- * @property {string} character - The input symbol to transition on.
- * @property {string} nextState - The next state after transitioning.
- * @method appliesTo - Checks if a given state and character match this rule's criteria.
- * @method follow - Returns the next state after applying this rule.
- * @method toString - Returns a string representation of the rule.
- * 
- * @example
- * const rule = new FARule(0, 'a', 1);
- * console.log(rule.appliesTo(0, 'a')); // true
- * console.log(rule.follow()); // 1
- * console.log(rule.toString()); // '0 -> a -> 1'
- */
-export class FARule {
-  constructor(state: number, character: string, nextState: number) {
-    this.state = state;
-    this.character = character;
-    this.nextState = nextState;
-  }
-
-  state: number;
-  character: string;
-  nextState: number;
-
-  appliesTo(state: number, character: string): boolean {
-    return this.state === state && this.character === character;
-  }
-
-  follow(): number {
-    return this.nextState;
-  }
-
-  toString(): string {
-    return `${this.state} -> ${this.character} -> ${this.nextState}`;
-  }
-}
+import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
 
 /**
  * Represents a rulebook for a Non-deterministic Finite Automata (NFA).
  * 
  * @class NFARulebook
  * @property {FARule[]} rules - An array of FARule objects representing the rules of the NFA.
+ * @property {string[]} alphabet - The set of characters that the NFA can process.
  * @method nextStates - Returns the next states for a given set of states and input character.
  * @method followRulesFor - Returns the next states for a given state and input character.
  * @method rulesFor - Returns the rules that apply to a given state and input character.
@@ -70,19 +32,22 @@ export class NFARulebook {
 
   rules: FARule[];
 
+  get alphabet(): string[] {
+    return Array.from(new Set(this.rules.filter((rule: FARule) => rule.character !== "ε")
+      .map((rule: FARule) => rule.character)
+    ));
+  }
+
   nextStates(states: Set<number>, character: string): Set<number> {
-    const result = new Set(Array.from(states).flatMap((state: number) => this.followRulesFor(state, character)));
-    return result;
+    return new Set(Array.from(states).flatMap((state: number) => this.followRulesFor(state, character)));
   }
 
   followRulesFor(state: number, character: string): number[] {
-    const result = this.rulesFor(state, character).map((rule: FARule) => rule.follow());
-    return result;
+    return this.rulesFor(state, character).map((rule: FARule) => rule.follow() as number);
   }
 
   rulesFor(state: number, character: string): FARule[] {
-    const result = this.rules.filter((rule: FARule) => rule.appliesTo(state, character));
-    return result;
+    return this.rules.filter((rule: FARule) => rule.appliesTo(state, character));
   }
 
   followFreeMoves(states: Set<number>): Set<number> {
@@ -183,12 +148,12 @@ export class NFADesign {
     return nfa.accepting();
   }
 
-  toNFA(): NFA {
-    return new NFA(new Set([this.startState]), this.acceptStates, this.rulebook);
+  toNFA(currentStates = new Set([this.startState])): NFA {
+    return new NFA(currentStates, this.acceptStates, this.rulebook);
   }
 }
 
-console.group("Part 1: Programs and Machines => 3. The Simplest Computers => Nondeterministic Finite Automata");
+console.group("* Part 1: Programs and Machines => 3. The Simplest Computers => Nondeterministic Finite Automata");
 
 const rulebook = new NFARulebook([
   new FARule(1, "a", 1), new FARule(1, "b", 1), new FARule(1, "b", 2),

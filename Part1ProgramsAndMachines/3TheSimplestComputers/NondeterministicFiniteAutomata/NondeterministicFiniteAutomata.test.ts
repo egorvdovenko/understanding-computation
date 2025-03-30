@@ -1,5 +1,5 @@
+import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
 import {
-  FARule,
   NFARulebook,
   NFA,
   NFADesign

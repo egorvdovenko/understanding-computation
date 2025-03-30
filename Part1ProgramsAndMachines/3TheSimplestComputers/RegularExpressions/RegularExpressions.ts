@@ -1,8 +1,5 @@
-import { 
-  FARule,
-  NFARulebook,
-  NFADesign 
-} from "../NondeterministicFiniteAutomata/NondeterministicFiniteAutomata";
+import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
+import { NFARulebook, NFADesign } from "../NondeterministicFiniteAutomata/NondeterministicFiniteAutomata";
 
 function* statesGenerator(): Generator<number> {
   let state = 0;
@@ -89,7 +86,7 @@ export class Empty extends Pattern {
  * 
  * @class Literal
  * @extends Pattern
- * @property {string} char - The character of the literal pattern.
+ * @property {string} character - The character of the literal pattern.
  * @property {number} precedence - The precedence of the literal pattern.
  * @method toNFADesign - Converts the literal pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method toString - Returns a string representation of the literal pattern.
@@ -100,7 +97,7 @@ export class Empty extends Pattern {
  * console.log(literalPattern.toString()); // 'a'
  */
 export class Literal extends Pattern {
-  constructor(private char: string) {
+  constructor(private character: string) {
     super();
   }
 
@@ -111,14 +108,14 @@ export class Literal extends Pattern {
   toNFADesign(): NFADesign {
     const startState = states.next().value;
     const acceptState = states.next().value;
-    const rule =  new FARule(startState, this.char, acceptState);
+    const rule =  new FARule(startState, this.character, acceptState);
     const rulebook = new NFARulebook([rule]);
 
     return new NFADesign(startState, [acceptState], rulebook);
   }
 
   toString(): string {
-    return this.char;
+    return this.character;
   }
 }
 
@@ -284,7 +281,7 @@ export class Repeat extends Pattern {
   }
 }
 
-console.group("Part 1: Programs and Machines => 3. The Simplest Computers => Regular Expressions");
+console.group("* Part 1: Programs and Machines => 3. The Simplest Computers => Regular Expressions");
 
 const pattern = new Repeat(
   new Concatenate(
