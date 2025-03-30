@@ -342,7 +342,7 @@ export class SWhile {
   }
 }
 
-console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Denotational Semantics");
+console.group("* Part 1: Programs and Machines => 2. The Meaning of Programs => Denotational Semantics");
 
 const environment: SEnvironment = {
   x: new SNumber(5).value,

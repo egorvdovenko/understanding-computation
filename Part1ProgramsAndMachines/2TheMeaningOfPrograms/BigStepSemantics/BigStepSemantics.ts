@@ -343,7 +343,7 @@ const environment: SEnvironment = {
   y: new SNumber(10).value,
 };
 
-console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Big-Step Semantics");
+console.group("* Part 1: Programs and Machines => 2. The Meaning of Programs => Big-Step Semantics");
 
 console.log("Environment: ", environment);
 

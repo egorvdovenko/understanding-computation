@@ -546,7 +546,7 @@ const environment: SEnvironment = {
   y: new SNumber(10),
 };
 
-console.group("Part 1: Programs and Machines => 2. The Meaning of Programs => Small-Step Semantics");
+console.group("* Part 1: Programs and Machines => 2. The Meaning of Programs => Small-Step Semantics");
 
 console.log("Environment: ", environment);
 
