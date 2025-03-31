@@ -74,7 +74,7 @@ export class DFARulebook {
  * 
  * @class DFA
  * @property {Set<number>} currentState - The current state of the DFA.
- * @property {Set<number>[]} acceptStates - The DFA's accepting states.
+ * @property {Set<number>} acceptStates - The DFA's accepting states.
  * @property {DFARulebook} rulebook - The DFA's rulebook.
  * @method accepting - Checks if the DFA is in an accepting state.
  * @method readCharacter - Transitions the DFA to the next state based on the given character.
@@ -82,18 +82,18 @@ export class DFARulebook {
  * 
  */
 export class DFA {
-  constructor(currentState: Set<number>, acceptStates: Set<number>[], rulebook: DFARulebook) {
+  constructor(currentState: Set<number>, acceptStates: Set<number>, rulebook: DFARulebook) {
     this.currentState = currentState;
     this.acceptStates = acceptStates;
     this.rulebook = rulebook;
   }
 
   currentState: Set<number>;
-  acceptStates: Set<number>[];
+  acceptStates: Set<number>;
   rulebook: DFARulebook;
 
   accepting(): boolean {
-    return this.acceptStates.some((acceptState: Set<number>) => this.currentState.isSubsetOf(acceptState));
+    return this.currentState.isSubsetOf(this.acceptStates);
   }
 
   readCharacter(character: string) {
@@ -112,21 +112,21 @@ export class DFA {
  * 
  * @class DFADesign
  * @property {Set<number>} startState - The DFA's starting state.
- * @property {Set<number>[]} acceptStates - The DFA's accepting states.
+ * @property {Set<number>} acceptStates - The DFA's accepting states.
  * @property {DFARulebook} rulebook - The DFA's rulebook.
  * @method toDFA - Converts the DFA design to a DFA.
  * @method accepts - Checks if the DFA design accepts a given input string.
  * 
  */
 export class DFADesign {
-  constructor(startState: Set<number>, acceptStates: Set<number>[], rulebook: DFARulebook) {
+  constructor(startState: Set<number>, acceptStates: Set<number>, rulebook: DFARulebook) {
     this.startState = startState;
     this.acceptStates = acceptStates;
     this.rulebook = rulebook;
   }
 
   startState: Set<number>;
-  acceptStates: Set<number>[];
+  acceptStates: Set<number>;
   rulebook: DFARulebook;
 
   toDFA(): DFA {
@@ -150,7 +150,7 @@ const rulebook = new DFARulebook([
 
 console.log("Rulebook: ", rulebook.toString());
 
-const dfaDesign = new DFADesign(new Set([0]), [new Set([2])], rulebook);
+const dfaDesign = new DFADesign(new Set([0]), new Set([2]), rulebook);
 
 console.log("Input: ab");
 console.log("Accepts: ", dfaDesign.accepts("ab"));

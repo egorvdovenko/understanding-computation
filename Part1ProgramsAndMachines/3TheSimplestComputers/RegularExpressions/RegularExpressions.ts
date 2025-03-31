@@ -1,11 +1,11 @@
 import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
 import { NFARulebook, NFADesign } from "../NondeterministicFiniteAutomata/NondeterministicFiniteAutomata";
 
-function* statesGenerator(): Generator<number> {
+function* statesGenerator(): Generator<Set<number>, Set<number>, Set<number>> {
   let state = 0;
 
   while (true) {
-    yield state++;
+    yield new Set([state++]);
   }
 }
 
@@ -62,7 +62,7 @@ export class Empty extends Pattern {
     const acceptState = startState;
     const rulebook = new NFARulebook([]);
 
-    return new NFADesign(startState, [acceptState], rulebook);
+    return new NFADesign(startState, acceptState, rulebook);
   }
 
   toString(): string {
@@ -96,7 +96,7 @@ export class Literal extends Pattern {
     const rule =  new FARule(startState, this.character, acceptState);
     const rulebook = new NFARulebook([rule]);
 
-    return new NFADesign(startState, [acceptState], rulebook);
+    return new NFADesign(startState, acceptState, rulebook);
   }
 
   toString(): string {
@@ -139,8 +139,8 @@ export class Concatenate extends Pattern {
 
     const rulebook = new NFARulebook([
       ...firstNFADesign.rulebook.rules,
-      ...firstNFADesign.acceptStates.map((state) => {
-        return new FARule(state, "ε", secondNFADesign.startState);
+      ...Array.from(firstNFADesign.acceptStates).map((state: number) => {
+        return new FARule(new Set([state]), "ε", secondNFADesign.startState);
       }),
       ...secondNFADesign.rulebook.rules,
     ]);
@@ -186,11 +186,9 @@ export class Choose extends Pattern {
     const secondNFADesign = this.secondPattern.toNFADesign();
 
     const startState = states.next().value;
-
-    const acceptStates = [
-      ...firstNFADesign.acceptStates,
-      ...secondNFADesign.acceptStates,
-    ];
+    const acceptStates = firstNFADesign.acceptStates.union(
+      secondNFADesign.acceptStates
+    );
 
     const rulebook = new NFARulebook([
       ...firstNFADesign.rulebook.rules,
@@ -236,13 +234,13 @@ export class Repeat extends Pattern {
     const nfaDesign = this.pattern.toNFADesign();
 
     const startState = states.next().value;
-    const acceptStates = [...nfaDesign.acceptStates, startState];
+    const acceptStates = nfaDesign.acceptStates.union(startState);
 
     const rulebook = new NFARulebook([
       ...nfaDesign.rulebook.rules,
       new FARule(startState, "ε", nfaDesign.startState),
-      ...acceptStates.map((state) => {
-        return new FARule(state, "ε", nfaDesign.startState);
+      ...Array.from(acceptStates).map((state: number) => {
+        return new FARule(new Set([state]), "ε", nfaDesign.startState);
       }),
     ]);
 

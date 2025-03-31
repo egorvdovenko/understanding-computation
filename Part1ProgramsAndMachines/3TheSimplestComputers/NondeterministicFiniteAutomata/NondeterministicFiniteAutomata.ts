@@ -1,9 +1,5 @@
 import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
 
-function normalizeSet(set: Set<number>[]): Set<string> {
-  return new Set(set.map(s => JSON.stringify([...s].sort())));
-}
-
 /**
  * Represents a rulebook for a Non-deterministic Finite Automata (NFA).
  *
@@ -29,26 +25,30 @@ export class NFARulebook {
     ));
   }
 
-  nextStates(states: Set<number>[], character: string): Set<number>[] {
-    return states.flatMap((state: Set<number>) => this.followRulesFor(state, character));
+  followFreeMoves(states: Set<number>): Set<number> {
+    const moreStates = this.nextStates(states, "ε");
+
+    if (moreStates.isSubsetOf(states)) {
+      return states;
+    } else {
+      return this.followFreeMoves(moreStates.union(states));
+    }
   }
 
-  followRulesFor(state: Set<number>, character: string): Set<number>[] {
-    return this.rulesFor(state, character).map((rule: FARule) => rule.follow());
+  nextStates(states: Set<number>, character: string): Set<number> {
+    return Array.from(states).reduce((acc: Set<number>, state: number) => 
+      acc.union(this.followRulesFor(new Set([state]), character)), new Set<number>()
+    );
+  }
+
+  followRulesFor(state: Set<number>, character: string): Set<number> {
+    return this.rulesFor(state, character).reduce((acc: Set<number>, rule: FARule) => 
+      acc.union(rule.follow()), new Set<number>()
+    );
   }
 
   rulesFor(state: Set<number>, character: string): FARule[] {
     return this.rules.filter((rule: FARule) => rule.appliesTo(state, character));
-  }
-
-  followFreeMoves(states: Set<number>[]): Set<number>[] {
-    const moreStates = this.nextStates(states, "ε");
-
-    if (normalizeSet(moreStates).isSubsetOf(normalizeSet(states))) {
-      return states;
-    } else {
-      return this.followFreeMoves([...states, ...moreStates]);
-    }
   }
 
   toString(): string {
@@ -69,29 +69,27 @@ export class NFARulebook {
  * 
  */
 export class NFA {
-  constructor(currentStates: Set<number>[], acceptStates: Set<number>[], rulebook: NFARulebook) {
+  constructor(currentStates: Set<number>, acceptStates: Set<number>, rulebook: NFARulebook) {
     this._currentStates = currentStates;
 
     this.acceptStates = acceptStates;
     this.rulebook = rulebook;
   }
 
-  _currentStates: Set<number>[];
+  _currentStates: Set<number>;
   
-  set currentStates(value: Set<number>[]) {
+  set currentStates(value: Set<number>) {
     this._currentStates = value;
   }
-  get currentStates(): Set<number>[] {
+  get currentStates(): Set<number> {
     return this.rulebook.followFreeMoves(this._currentStates);
   }
 
-  acceptStates: Set<number>[];
+  acceptStates: Set<number>;
   rulebook: NFARulebook;
 
   accepting(): boolean {
-    return this.currentStates.some((currentState: Set<number>) => 
-      this.acceptStates.some((acceptState: Set<number>) => currentState.isSubsetOf(acceptState))
-    );
+    return !this.acceptStates.isDisjointFrom(this.currentStates);
   }
 
   readCharacter(character: string) {
@@ -117,14 +115,14 @@ export class NFA {
  * 
  */
 export class NFADesign {
-  constructor(startState: Set<number>, acceptStates: Set<number>[], rulebook: NFARulebook) {
+  constructor(startState: Set<number>, acceptStates: Set<number>, rulebook: NFARulebook) {
     this.startState = startState;
     this.acceptStates = acceptStates;
     this.rulebook = rulebook;
   }
 
   startState: Set<number>;
-  acceptStates: Set<number>[];
+  acceptStates: Set<number>;
   rulebook: NFARulebook;
 
   accepts(string: string): boolean {
@@ -133,7 +131,7 @@ export class NFADesign {
     return nfa.accepting();
   }
 
-  toNFA(currentStates = [this.startState]): NFA {
+  toNFA(currentStates = this.startState): NFA {
     return new NFA(currentStates, this.acceptStates, this.rulebook);
   }
 }
@@ -152,7 +150,7 @@ const rulebook = new NFARulebook([
 
 console.log("Rulebook: ", rulebook.toString());
 
-const nfaDesign = new NFADesign(new Set([1]), [new Set([2]), new Set([4])], rulebook);
+const nfaDesign = new NFADesign(new Set([1]), new Set([2, 4]), rulebook);
 
 console.log("Input: a");
 console.log("Accepting: ", nfaDesign.accepts("a"));

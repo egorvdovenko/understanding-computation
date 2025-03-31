@@ -1,17 +1,18 @@
 import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
 import { NFARulebook, NFADesign } from "../NondeterministicFiniteAutomata/NondeterministicFiniteAutomata";
+import NormalizedSet from "../NormalizedSet";
 
-function normalizeSet(set: Set<Set<number>>): Set<string> {
-  return new Set([...set].map(s => JSON.stringify([...s].sort())));
-}
-
-function mergeSetsOfSets(setA: Set<Set<number>>, setB: Set<Set<number>>): Set<Set<number>> {
-  const normalizedMerged = 
-    normalizeSet(setA).union(normalizeSet(setB));
-    
-  return new Set([...normalizedMerged].map(s => new Set(JSON.parse(s))));
-}
-
+/**
+ * Represents a Non-deterministic Finite Automata (NFA) simulation.
+ * 
+ * @class NFASimulation
+ * @property {NFADesign} nfaDesign - The design of the NFA.
+ * @method nextState - Returns the next state after applying a character to a given state.
+ * @method rulesFor - Returns the rules for a given state.
+ * @method discoverStatesAndRules - Discovers states and rules for the NFA.
+ * @method toDFADesign - Converts the NFA to a DFA design.
+ * 
+ */
 export class NFASimulation {
   constructor(nfaDesign: NFADesign) {
     this.nfaDesign = nfaDesign;
@@ -21,8 +22,11 @@ export class NFASimulation {
 
   nextState(state: Set<number>, character: string): Set<number> {
     const nfa = this.nfaDesign.toNFA(state);
+
     nfa.readCharacter(character);
-    return nfa.currentStates;
+    return Array.from(nfa.currentStates).reduce((acc: Set<number>, currentState: number) => 
+      acc.add(currentState), new Set<number>()
+    );
   }
 
   rulesFor(state: Set<number>): FARule[] {
@@ -32,13 +36,15 @@ export class NFASimulation {
   }
 
   discoverStatesAndRules(states: Set<Set<number>>): [Set<Set<number>>, FARule[]] {
-    const rules = Array.from(states).flatMap((state) => this.rulesFor(state));
-    const moreStates = new Set(rules.map((rule: FARule) => rule.follow() as Set<number>));
+    const rules = Array.from(states).flatMap((state: Set<number>) => this.rulesFor(state));
+    const moreStates = rules.reduce((acc: Set<Set<number>>, rule: FARule) => 
+      acc.add(rule.follow()), new Set<Set<number>>()
+    );
 
-    if (normalizeSet(moreStates).isSubsetOf(normalizeSet(states))) {
+    if (new NormalizedSet(moreStates).isSubsetOf(states)) {
       return [states, rules];
     } else {
-      return this.discoverStatesAndRules(mergeSetsOfSets(states, moreStates));
+      return this.discoverStatesAndRules(new NormalizedSet(states).union(moreStates));
     }
   }
 
@@ -54,15 +60,18 @@ export class NFASimulation {
 console.group("* Part 1: Programs and Machines => 3. The Simplest Computers => Equivalence");
 
 const rulebook = new NFARulebook([
-  new FARule(1, "a", 1), new FARule(1, "a", 2), new FARule(1, "ε", 2),
-  new FARule(2, "b", 3),
-  new FARule(3, "b", 1), new FARule(3, "ε", 2),
+  new FARule(new Set([1]), "a", new Set([1])), 
+  new FARule(new Set([1]), "a", new Set([2])), 
+  new FARule(new Set([1]), "ε", new Set([2])),
+  new FARule(new Set([2]), "b", new Set([3])),
+  new FARule(new Set([3]), "b", new Set([1])), 
+  new FARule(new Set([3]), "ε", new Set([2])),
 ]);
 
 console.log("Rulebook: ", rulebook.toString());
 
 console.log("----------------------------------------");
-const nfaDesign = new NFADesign(1, [3], rulebook);
+const nfaDesign = new NFADesign(new Set([1]), new Set([3]), rulebook);
 console.log("Current states: ", nfaDesign.toNFA().currentStates);
 console.log("Current states [2]: ", nfaDesign.toNFA(new Set([2])).currentStates);
 console.log("Current states [3]: ", nfaDesign.toNFA(new Set([3])).currentStates);
@@ -88,6 +97,15 @@ console.log("----------------------------------------");
 const startState = nfaDesign.toNFA().currentStates;
 console.log("Start state: ", startState);
 console.log("Discover states and rules: ", simulation.discoverStatesAndRules(new Set([startState])));
+console.log("Accept [1, 2]: ", nfaDesign.toNFA(new Set([1, 2])).accepting());
+console.log("Accept [2, 3]: ", nfaDesign.toNFA(new Set([2, 3])).accepting());
 console.log("----------------------------------------");
+
+// console.log("----------------------------------------");
+// const dfaDesign = simulation.toDFADesign();
+// console.log("DFA accept \"aaa\": ", dfaDesign.accepts("aaa"));
+// console.log("DFA accept \"aab\": ", dfaDesign.accepts("aab"));
+// console.log("DFA accept \"bbbabb\": ", dfaDesign.accepts("bbbabb"));
+// console.log("----------------------------------------");
 
 console.groupEnd();

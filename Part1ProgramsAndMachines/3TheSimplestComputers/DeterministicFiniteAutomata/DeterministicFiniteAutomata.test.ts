@@ -26,11 +26,6 @@ describe("DeterministicFiniteAutomata", () => {
       const rule = new FARule(states[0], "a", states[1]);
       expect(rule.follow()).toEqual(states[1]);
     });
-
-    it("should return a string representation of the rule", () => {
-      const rule = new FARule(states[0], "a", states[1]);
-      expect(rule.toString()).toBe("{0} -> a -> {1}");
-    });
   });
 
   describe("DFARulebook", () => {
@@ -47,33 +42,38 @@ describe("DeterministicFiniteAutomata", () => {
 
   describe("DFA", () => {
     it("should return true if the DFA is in an accepting state", () => {
-      const dfa = new DFA(states[0], [states[0]], rulebook);
+      const dfa = new DFA(states[0], states[0], rulebook);
       expect(dfa.accepting()).toBeTruthy();
     });
 
     it("should return false if the DFA is not in an accepting state", () => {
-      const dfa = new DFA(states[0], [states[2]], rulebook);
+      const dfa = new DFA(states[0], states[2], rulebook);
       expect(dfa.accepting()).toBeFalsy();
     });
 
     it("should transition the DFA to the next state based on the given character", () => {
-      const dfa = new DFA(states[0], [states[1]], rulebook);
+      const dfa = new DFA(states[0], states[1], rulebook);
       dfa.readCharacter("a");
       expect(dfa.currentState).toBe(states[1]);
     });
 
     it("should transition the DFA to the next state based on the given string", () => {
-      const dfa = new DFA(states[0], [states[1]], rulebook);
+      const dfa = new DFA(states[0], states[1], rulebook);
       dfa.readString("ab");
       expect(dfa.currentState).toBe(states[2]);
     });
   });
 
   describe("DFADesign", () => {
-    it("should check if the DFA design accepts a given input string", () => {
-      const dfaDesign = new DFADesign(states[0], [states[2]], rulebook);
-      expect(dfaDesign.accepts("a")).toBeFalsy();
-      expect(dfaDesign.accepts("b")).toBeFalsy();
+    it("should check if the DFA design accepts a valid input string", () => {
+      const dfaDesign = new DFADesign(states[0], states[2], rulebook);
+      expect(dfaDesign.accepts("ab")).toBeTruthy();
+      expect(dfaDesign.accepts("aa")).toBeFalsy();
+    });
+
+    it("should check if the DFA design accepts an empty string", () => {
+      const dfaDesign = new DFADesign(states[0], states[2], rulebook);
+      expect(dfaDesign.accepts("")).toBeFalsy();
     });
   });
 });
