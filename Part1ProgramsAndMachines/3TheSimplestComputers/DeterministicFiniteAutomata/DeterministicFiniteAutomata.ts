@@ -1,41 +1,36 @@
 /**
  * Represents a rule in the Finite Automata (FA) system.
- *
+ * 
  * @class FARule
- * @property {string} state - The current state of the FA.
- * @property {string} character - The input symbol to transition on.
- * @property {string} nextState - The next state after transitioning.
- * @method appliesTo - Checks if a given state and character match this rule's criteria.
- * @method follow - Returns the next state after applying this rule.
+ * @property {Set<number>} state - The state of the rule.
+ * @property {string} character - The character of the rule.
+ * @property {Set<number>} nextState - The next state of the rule.
+ * @method appliesTo - Checks if the rule applies to a given state and character.
+ * @method follow - Returns the next state of the rule.
  * @method toString - Returns a string representation of the rule.
  * 
- * @example
- * const rule = new FARule(0, 'a', 1);
- * console.log(rule.appliesTo(0, 'a')); // true
- * console.log(rule.follow()); // 1
- * console.log(rule.toString()); // '0 -> a -> 1'
  */
 export class FARule {
-  constructor(state: number, character: string, nextState: number) {
+  constructor(state: Set<number>, character: string, nextState: Set<number>) {
     this.state = state;
     this.character = character;
     this.nextState = nextState;
   }
 
-  state: number;
+  state: Set<number>;
   character: string;
-  nextState: number;
+  nextState: Set<number>;
 
-  appliesTo(state: number, character: string): boolean {
-    return this.state === state && this.character === character;
+  appliesTo(state: Set<number>, character: string): boolean {
+    return character === this.character && state.isSubsetOf(this.state);
   }
 
-  follow(): number {
+  follow(): Set<number> {
     return this.nextState;
   }
 
   toString(): string {
-    return `${this.state} -> ${this.character} -> ${this.nextState}`;
+    return `{${Array.from(this.state).join(",")}} -> ${this.character} -> {${Array.from(this.nextState).join(",")}}`;
   }
 }
 
@@ -47,12 +42,6 @@ export class FARule {
  * @method nextState - Returns the next state after applying a rule to a given state and character.
  * @method ruleFor - Finds the rule for a specific state and character.
  * 
- * @example
- * const rule1 = new FARule(0, 'a', 1);
- * const rule2 = new FARule(1, 'b', 2);
- * const rulebook = new DFARulebook([rule1, rule2]);
- * console.log(rulebook.nextState(0, 'a')); // 1
- * console.log(rulebook.ruleFor(0, 'a').toString()); // '0 -> a -> 1'
  */
 export class DFARulebook {
   constructor(rules: FARule[]) {
@@ -61,12 +50,18 @@ export class DFARulebook {
 
   rules: FARule[];
 
-  nextState(state: number, character: string): number {
+  nextState(state: Set<number>, character: string): Set<number> {
     return this.ruleFor(state, character).follow();
   }
 
-  ruleFor(state: number, character: string): FARule {
-    return this.rules.find((rule) => rule.appliesTo(state, character))!;
+  ruleFor(state: Set<number>, character: string): FARule {
+    const rules = this.rules.find((rule) => rule.appliesTo(state, character));
+
+    if (!rules) {
+      throw new Error(`No rule found for state ${Array.from(state).join(",")} and character ${character}`);
+    }
+    
+    return rules;
   }
 
   toString(): string {
@@ -78,32 +73,27 @@ export class DFARulebook {
  * Represents a deterministic finite automaton (DFA).
  * 
  * @class DFA
- * @property {number} currentState - The current state of the DFA.
- * @property {number[]} acceptStates - An array of states that are accepting states.
+ * @property {Set<number>} currentState - The current state of the DFA.
+ * @property {Set<number>[]} acceptStates - The DFA's accepting states.
  * @property {DFARulebook} rulebook - The DFA's rulebook.
  * @method accepting - Checks if the DFA is in an accepting state.
  * @method readCharacter - Transitions the DFA to the next state based on the given character.
  * @method readString - Transitions the DFA to the next state based on the given string.
  * 
- * @example
- * const rule1 = new FARule(0, 'a', 1);
- * const rule2 = new FARule(1, 'b', 2);
- * const rulebook = new DFARulebook([rule1, rule2]);
- * const dfa = new DFA(0, [1], rulebook);
  */
 export class DFA {
-  constructor(currentState: number, acceptStates: number[], rulebook: DFARulebook) {
+  constructor(currentState: Set<number>, acceptStates: Set<number>[], rulebook: DFARulebook) {
     this.currentState = currentState;
     this.acceptStates = acceptStates;
     this.rulebook = rulebook;
   }
 
-  currentState: number;
-  acceptStates: number[];
+  currentState: Set<number>;
+  acceptStates: Set<number>[];
   rulebook: DFARulebook;
 
   accepting(): boolean {
-    return this.acceptStates.includes(this.currentState);
+    return this.acceptStates.some((acceptState: Set<number>) => this.currentState.isSubsetOf(acceptState));
   }
 
   readCharacter(character: string) {
@@ -121,30 +111,22 @@ export class DFA {
  * Represents a DFA design.
  * 
  * @class DFADesign
- * @property {number} startState - The start state of the DFA.
- * @property {number[]} acceptStates - An array of states that are accepting states.
+ * @property {Set<number>} startState - The DFA's starting state.
+ * @property {Set<number>[]} acceptStates - The DFA's accepting states.
  * @property {DFARulebook} rulebook - The DFA's rulebook.
  * @method toDFA - Converts the DFA design to a DFA.
  * @method accepts - Checks if the DFA design accepts a given input string.
  * 
- * @example
- * const rule1 = new FARule(0, 'a', 1);
- * const rule2 = new FARule(0, 'b', 0);
- * const rule3 = new FARule(1, 'b', 2);
- * const rulebook = new DFARulebook([rule1, rule2, rule3]);
- * const dfaDesign = new DFADesign(0, [2], rulebook);
- * console.log(dfaDesign.accepts('ab')); // true
- * console.log(dfaDesign.accepts('ba')); // false
  */
 export class DFADesign {
-  constructor(startState: number, acceptStates: number[], rulebook: DFARulebook) {
+  constructor(startState: Set<number>, acceptStates: Set<number>[], rulebook: DFARulebook) {
     this.startState = startState;
     this.acceptStates = acceptStates;
     this.rulebook = rulebook;
   }
 
-  startState: number;
-  acceptStates: number[];
+  startState: Set<number>;
+  acceptStates: Set<number>[];
   rulebook: DFARulebook;
 
   toDFA(): DFA {
@@ -158,17 +140,17 @@ export class DFADesign {
   }    
 }
 
-console.group("Part 1: Programs and Machines => 3. The Simplest Computers => Deterministic Finite Automata");
+console.group("* Part 1: Programs and Machines => 3. The Simplest Computers => Deterministic Finite Automata");
 
-const rule1 = new FARule(0, "a", 1);
-const rule2 = new FARule(0, "b", 0);
-const rule3 = new FARule(1, "b", 2);
-
-const rulebook = new DFARulebook([rule1, rule2, rule3]);
+const rulebook = new DFARulebook([
+  new FARule(new Set([0]), "a", new Set([1])),
+  new FARule(new Set([0]), "b", new Set([0])),
+  new FARule(new Set([1]), "b", new Set([2]))
+]);
 
 console.log("Rulebook: ", rulebook.toString());
 
-const dfaDesign = new DFADesign(0, [2], rulebook);
+const dfaDesign = new DFADesign(new Set([0]), [new Set([2])], rulebook);
 
 console.log("Input: ab");
 console.log("Accepts: ", dfaDesign.accepts("ab"));
