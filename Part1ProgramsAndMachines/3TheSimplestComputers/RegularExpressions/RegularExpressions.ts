@@ -21,14 +21,7 @@ const states = statesGenerator();
  * @method toNFADesign - Converts the pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method matches - Checks if the pattern matches a given string.
  * @method inspect - Returns a string representation of the pattern.
- *
- * @example
- * const pattern = new Literal('a');
- * console.log(pattern.precedence); // 3
- * console.log(pattern.bracket(2)); // '(a)'
- * console.log(pattern.toNFADesign()); // NFADesign object
- * console.log(pattern.matches('a')); // true
- * console.log(pattern.inspect()); // '/a/'
+ * 
  */
 abstract class Pattern {
   abstract get precedence(): number;
@@ -58,10 +51,6 @@ abstract class Pattern {
  * @method toNFADesign - Converts the empty pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method toString - Returns a string representation of the empty pattern.
  * 
- * @example
- * const emptyPattern = new Empty();
- * console.log(emptyPattern.precedence); // 3
- * console.log(emptyPattern.toString()); // ''
  */
 export class Empty extends Pattern {
   get precedence(): number {
@@ -91,10 +80,6 @@ export class Empty extends Pattern {
  * @method toNFADesign - Converts the literal pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method toString - Returns a string representation of the literal pattern.
  * 
- * @example
- * const literalPattern = new Literal('a');
- * console.log(literalPattern.precedence); // 3
- * console.log(literalPattern.toString()); // 'a'
  */
 export class Literal extends Pattern {
   constructor(private character: string) {
@@ -130,10 +115,6 @@ export class Literal extends Pattern {
  * @method toNFADesign - Converts the concatenation pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method toString - Returns a string representation of the concatenation pattern.
  * 
- * @example
- * const concatPattern = new Concatenate(new Literal('a'), new Literal('b'));
- * console.log(concatPattern.precedence); // 1
- * console.log(concatPattern.toString()); // 'ab'
  */
 export class Concatenate extends Pattern {
   constructor(firstPattern: Pattern, secondPattern: Pattern) {
@@ -185,10 +166,6 @@ export class Concatenate extends Pattern {
  * @method toNFADesign - Converts the choice pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method toString - Returns a string representation of the choice pattern.
  * 
- * @example
- * const choosePattern = new Choose(new Literal('a'), new Literal('b'));
- * console.log(choosePattern.precedence); // 0
- * console.log(choosePattern.toString()); // 'a|b'
  */
 export class Choose extends Pattern {
   constructor(firstPattern: Pattern, secondPattern: Pattern) {
@@ -242,10 +219,6 @@ export class Choose extends Pattern {
  * @method toNFADesign - Converts the repetition pattern to a Non-deterministic Finite Automata (NFA) design.
  * @method toString - Returns a string representation of the repetition pattern.
  * 
- * @example
- * const repeatPattern = new Repeat(new Literal('a'));
- * console.log(repeatPattern.precedence); // 2
- * console.log(repeatPattern.toString()); // '(a)*'
  */
 export class Repeat extends Pattern {
   constructor(pattern: Pattern) {
