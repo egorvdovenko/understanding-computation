@@ -11,10 +11,6 @@ export type SEnvironment = Record<string, number | boolean>;
  * @method toJS - Returns the JavaScript representation of the number.
  * @method toString - Returns the string representation of the number.
  * 
- * @example
- * const num = new SNumber(5);
- * console.log(num.toJS()); // "(environment) => new Number(5)"
- * console.log(num.toString()); // "5"
  */
 export class SNumber {
   constructor(public value: number) {}
@@ -36,10 +32,6 @@ export class SNumber {
  * @method toJS - Returns the JavaScript representation of the boolean.
  * @method toString - Returns the string representation of the boolean.
  * 
- * @example
- * const bool = new SBoolean(true);
- * console.log(bool.toJS()); // "(environment) => new Boolean(true)"
- * console.log(bool.toString()); // "true"
  */
 export class SBoolean {
   constructor(value: boolean) {
@@ -65,10 +57,6 @@ export class SBoolean {
  * @method toJS - Returns the JavaScript representation of the variable.
  * @method toString - Returns the string representation of the variable.
  * 
- * @example
- * const variable = new SVariable("x");
- * console.log(variable.toJS()); // "(environment) => environment["x"]"
- * console.log(variable.toString()); // "x"
  */
 export class SVariable {
   constructor(name: string) {
@@ -95,10 +83,6 @@ export class SVariable {
  * @method toJS - Returns the JavaScript representation of the addition expression.
  * @method toString - Returns the string representation of the addition expression.
  * 
- * @example
- * const add = new SAdd(new SNumber(5), new SNumber(3));
- * console.log(add.toJS()); // "(environment) => new Number(5)(environment) + new Number(3)(environment)"
- * console.log(add.toString()); // "(5 + 3)"
  */
 export class SAdd {
   constructor(left: SExpression, right: SExpression) {
@@ -127,10 +111,6 @@ export class SAdd {
  * @method toJS - Returns the JavaScript representation of the multiplication expression.
  * @method toString - Returns the string representation of the multiplication expression.
  * 
- * @example
- * const multiply = new SMultiply(new SNumber(5), new SNumber(3));
- * console.log(multiply.toJS()); // "(environment) => new Number(5)(environment) * new Number(3)(environment)"
- * console.log(multiply.toString()); // "(5 * 3)"
  */
 export class SMultiply {
   constructor(left: SExpression, right: SExpression) {
@@ -159,10 +139,6 @@ export class SMultiply {
  * @method toJS - Returns the JavaScript representation of the less than comparison expression.
  * @method toString - Returns the string representation of the less than comparison expression.
  * 
- * @example
- * const lessThan = new SLessThan(new SNumber(5), new SNumber(3));
- * console.log(lessThan.toJS()); // "(environment) => new Number(5)(environment) < new Number(3)(environment)"
- * console.log(lessThan.toString()); // "(5 < 3)"
  */
 export class SLessThan {
   constructor(left: SExpression, right: SExpression) {
@@ -191,10 +167,6 @@ export class SLessThan {
  * @method toJS - Returns the JavaScript representation of the assignment statement.
  * @method toString - Returns the string representation of the assignment statement.
  * 
- * @example
- * const assign = new SAssign("x", new SNumber(5));
- * console.log(assign.toJS()); // "(environment) => ({ ...environment, x: new Number(5)(environment) })"
- * console.log(assign.toString()); // "x = 5"
  */
 export class SAssign {
   constructor(name: string, expression: SExpression) {
@@ -221,10 +193,6 @@ export class SAssign {
  * @method toJS - Returns the JavaScript representation of the do-nothing statement.
  * @method toString - Returns the string representation of the do-nothing statement.
  * 
- * @example
- * const doNothing = new SDoNothing();
- * console.log(doNothing.toJS()); // "(environment) => environment"
- * console.log(doNothing.toString()); // "do-nothing"
  */
 export class SDoNothing {
   toJS(): string {
@@ -246,13 +214,6 @@ export class SDoNothing {
  * @method toJS - Returns the JavaScript representation of the if statement.
  * @method toString - Returns the string representation of the if statement.
  * 
- * @example
- * const condition = new SBoolean(true);
- * const consequence = new SAssign("x", new SNumber(10));
- * const alternative = new SDoNothing();
- * const ifStatement = new SIf(condition, consequence, alternative);
- * console.log(ifStatement.toJS()); // "(environment) => new Boolean(true)(environment) === new Boolean(true) ? ({ ...environment, x: new Number(10)(environment) }) : environment"
- * console.log(ifStatement.toString()); // "if (true) { x = 10 } else { do-nothing }"
  */
 export class SIf {
   constructor(condition: SExpression, consequence: SStatement, alternative: SStatement) {
@@ -283,12 +244,6 @@ export class SIf {
  * @method toJS - Returns the JavaScript representation of the sequence of statements.
  * @method toString - Returns the string representation of the sequence of statements.
  * 
- * @example
- * const first = new SAssign("x", new SNumber(5));
- * const second = new SAssign("y", new SNumber(10));
- * const sequence = new SSequence(first, second);
- * console.log(sequence.toJS()); // "(environment) => new Number(10)({ ...environment, x: new Number(5)(environment) })"
- * console.log(sequence.toString()); // "x = 5; y = 10"
  */
 export class SSequence {
   constructor(first: SStatement, second: SStatement) {
@@ -317,12 +272,6 @@ export class SSequence {
  * @method toJS - Returns the JavaScript representation of the while loop.
  * @method toString - Returns the string representation of the while loop.
  * 
- * @example
- * const condition = new SLessThan(new SVariable("x"), new SNumber(10));
- * const body = new SAssign("x", new SAdd(new SVariable("x"), new SNumber(1)));
- * const whileLoop = new SWhile(condition, body);
- * console.log(whileLoop.toJS()); // "(environment) => { while (environment["x"] < new Number(10)(environment)) { environment = ({ ...environment, x: environment["x"] + new Number(1)(environment) }) } return environment }"
- * console.log(whileLoop.toString()); // "while (x < 10) { x = x + 1 }"
  */
 export class SWhile {
   constructor(condition: SExpression, body: SStatement) {

@@ -11,10 +11,6 @@ export type SEnvironment = Record<string, number | boolean>;
  * @method eval - Returns the numeric value of this instance.
  * @method toString - Returns the string representation of the number.
  * 
- * @example
- * const num = new SNumber(5);
- * console.log(num.eval()); // 5
- * console.log(num.toString()); // "5"
  */
 export class SNumber {
   constructor(value: number) {
@@ -41,10 +37,6 @@ export class SNumber {
  * @method eval - Returns the boolean value of this instance.
  * @method toString - Returns the string representation of the boolean.
  * 
- * @example
- * const bool = new SBoolean(true);
- * console.log(bool.eval()); // true
- * console.log(bool.toString()); // "true"
  */
 export class SBoolean {
   constructor(value: boolean) {
@@ -71,10 +63,6 @@ export class SBoolean {
  * @method eval - Returns the value of the variable from the environment.
  * @method toString - Returns the string representation of the variable.
  * 
- * @example
- * const variable = new SVariable("x");
- * console.log(variable.eval({ x: 5 })); // 5
- * console.log(variable.toString()); // "x"
  */
 export class SVariable {
   constructor(name: string) {
@@ -101,10 +89,6 @@ export class SVariable {
  * @method eval - Returns the sum of the left and right expressions.
  * @method toString - Returns the string representation of the addition expression.
  * 
- * @example
- * const add = new SAdd(new SNumber(5), new SNumber(10));
- * console.log(add.eval()); // 15
- * console.log(add.toString()); // "5 + 10"
  */
 export class SAdd {
   constructor(left: SExpression, right: SExpression) {
@@ -137,10 +121,6 @@ export class SAdd {
  * @method eval - Returns the product of the left and right expressions.
  * @method toString - Returns the string representation of the multiplication expression.
  * 
- * @example
- * const multiply = new SMultiply(new SNumber(5), new SNumber(10));
- * console.log(multiply.eval()); // 50
- * console.log(multiply.toString()); // "5 * 10"
  */
 export class SMultiply {
   constructor(left: SExpression, right: SExpression) {
@@ -173,10 +153,6 @@ export class SMultiply {
  * @method eval - Returns the boolean value of the comparison.
  * @method toString - Returns the string representation of the less than expression.
  * 
- * @example
- * const lessThan = new SLessThan(new SNumber(5), new SNumber(10));
- * console.log(lessThan.eval()); // true
- * console.log(lessThan.toString()); // "5 < 10"
  */
 export class SLessThan {
   constructor(left: SExpression, right: SExpression) {
@@ -205,10 +181,6 @@ export class SLessThan {
  * @method eval - Returns the environment with the variable assigned to the expression.
  * @method toString - Returns the string representation of the assignment expression.
  * 
- * @example
- * const assign = new SAssign("x", new SNumber(5));
- * console.log(assign.eval({})); // { x: 5 }
- * console.log(assign.toString()); // "x = 5"
  */
 export class SAssign {
   constructor(name: string, expression: SExpression) {
@@ -235,9 +207,6 @@ export class SAssign {
  * @method eval - Returns the environment without any changes.
  * @method toString - Returns the string representation of the do-nothing statement.
  * 
- * @example
- * const doNothing = new SDoNothing();
- * console.log(doNothing.eval({ x: 5 })); // { x: 5 }
  */
 export class SDoNothing {
   eval(environment: SEnvironment): SEnvironment {
@@ -259,10 +228,6 @@ export class SDoNothing {
  * @method eval - Returns the environment after executing the consequence or alternative statement.
  * @method toString - Returns the string representation of the if statement.
  * 
- * @example
- * const ifStatement = new SIf(new SLessThan(new SVariable("x"), new SNumber(10)), new SAssign("y", new SNumber(10)), new SDoNothing());
- * console.log(ifStatement.eval({ x: 5 })); // { x: 5, y: 10 }
- * console.log(ifStatement.toString()); // "if (x < 10) { y = 10 } else { do-nothing }"
  */
 export class SIf {
   constructor(condition: SExpression, consequence: SStatement, alternative: SStatement) {
@@ -295,10 +260,6 @@ export class SIf {
  * @method eval - Returns the environment after executing the second statement.
  * @method toString - Returns the string representation of the sequence of statements.
  * 
- * @example
- * const sequence = new SSequence(new SAssign("x", new SNumber(5)), new SAssign("y", new SNumber(10)));
- * console.log(sequence.eval({})); // { x: 5, y: 10 }
- * console.log(sequence.toString()); // "x = 5; y = 10"
  */
 export class SSequence {
   constructor(first: SStatement, second: SStatement) {
