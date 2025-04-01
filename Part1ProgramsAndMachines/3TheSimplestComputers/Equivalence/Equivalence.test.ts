@@ -25,32 +25,37 @@ describe("Equivalence", () => {
   
     it("should correctly calculate the rules for a given state", () => {
       const nfaSimulation = new NFASimulation(nfaDesign);
-      const state = states[1];
-      const rules = nfaSimulation.rulesFor(state);
+      const rules = nfaSimulation.rulesFor(new Set([1, 2]));
       expect(rules.length).toBe(2);
+      expect(rules[0].toString()).toBe("{1,2} -> a -> {1,2}");
+      expect(rules[1].toString()).toBe("{1,2} -> b -> {2,3}");
     });
-  
+
     it("should correctly discover states and rules", () => {
       const nfaSimulation = new NFASimulation(nfaDesign);
-      const initialStates = new Set([states[1]]);
-      const [discoveredStates, rules] = nfaSimulation.discoverStatesAndRules(initialStates);
-      expect(discoveredStates.size).toBe(5);
-      expect(rules.length).toBeGreaterThan(0);
+      const [discoveredStates, rules] = nfaSimulation.discoverStatesAndRules([new Set([1, 2])]);
+      expect(discoveredStates.length).toBe(4);
+      expect(discoveredStates[0]).toEqual(new Set([1, 2]));
+      expect(discoveredStates[1]).toEqual(new Set([2, 3]));
+      expect(discoveredStates[2]).toEqual(new Set());
+      expect(discoveredStates[3]).toEqual(new Set([2, 3, 1]));
+      expect(rules.length).toBe(8);
+      expect(rules[0].toString()).toBe("{1,2} -> a -> {1,2}");
+      expect(rules[1].toString()).toBe("{1,2} -> b -> {2,3}");
+      expect(rules[2].toString()).toBe("{2,3} -> a -> {}");
+      expect(rules[3].toString()).toBe("{2,3} -> b -> {2,3,1}");
+      expect(rules[4].toString()).toBe("{} -> a -> {}");
+      expect(rules[5].toString()).toBe("{} -> b -> {}");
+      expect(rules[6].toString()).toBe("{2,3,1} -> a -> {1,2}");
+      expect(rules[7].toString()).toBe("{2,3,1} -> b -> {2,3,1}");
     });
   
-    // it("should correctly convert to DFA design", () => {
-    //   const nfaSimulation = new NFASimulation(nfaDesign);
-    //   const dfaDesign = nfaSimulation.toDFADesign();
-    //   expect(dfaDesign).toBeDefined();
-    //   expect(dfaDesign.startState).toEqual(states[1]);
-    //   expect(dfaDesign.acceptStates).toContain(states[3]);
-    // });
-  
-    // it("should correctly simulate the DFA design", () => {
-    //   const nfaSimulation = new NFASimulation(nfaDesign);
-    //   const dfaDesign = nfaSimulation.toDFADesign();
-    //   expect(dfaDesign.accepts("aaa")).toBe(true);
-    //   expect(dfaDesign.accepts("aab")).toBe(false);
-    // });
+    it("should correctly simulate the DFA", () => {
+      const nfaSimulation = new NFASimulation(nfaDesign);
+      const dfaDesign = nfaSimulation.toDFADesign();
+      expect(dfaDesign.accepts("aaa")).toBe(false);
+      expect(dfaDesign.accepts("aab")).toBe(true);
+      expect(dfaDesign.accepts("bbbabb")).toBe(true);
+    });
   });
 });

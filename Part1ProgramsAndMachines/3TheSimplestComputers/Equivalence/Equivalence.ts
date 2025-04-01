@@ -1,6 +1,55 @@
-import { FARule } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
+import { FARule, DFARulebook } from "../DeterministicFiniteAutomata/DeterministicFiniteAutomata";
 import { NFARulebook, NFADesign } from "../NondeterministicFiniteAutomata/NondeterministicFiniteAutomata";
-import NormalizedSet from "../NormalizedSet";
+
+class EquivalenceAdaptedDFA {
+  constructor(currentState: Set<number>, acceptStates: Set<number>[], rulebook: DFARulebook) {
+    this.currentState = currentState;
+    this.acceptStates = acceptStates;
+    this.rulebook = rulebook;
+  }
+
+  currentState: Set<number>;
+  acceptStates: Set<number>[];
+  rulebook: DFARulebook;
+
+  accepting(): boolean {
+    return this.acceptStates.some((acceptState: Set<number>) => 
+      acceptState.difference(this.currentState).size === 0
+    );
+  }
+
+  readCharacter(character: string) {
+    this.currentState = this.rulebook.nextState(this.currentState, character);
+  }
+
+  readString(input: string) {
+    for (const character of input) {
+      this.readCharacter(character);
+    }
+  }
+}
+
+class EquivalenceAdaptedDFADesign {
+  constructor(startState: Set<number>, acceptStates: Set<number>[], rulebook: DFARulebook) {
+    this.startState = startState;
+    this.acceptStates = acceptStates;
+    this.rulebook = rulebook;
+  }
+
+  startState: Set<number>;
+  acceptStates: Set<number>[];
+  rulebook: DFARulebook;
+
+  toDFA(): EquivalenceAdaptedDFA {
+    return new EquivalenceAdaptedDFA(this.startState, this.acceptStates, this.rulebook);
+  }
+
+  accepts(input: string): boolean {
+    const dfa = this.toDFA();
+    dfa.readString(input);
+    return dfa.accepting();
+  }    
+}
 
 /**
  * Represents a Non-deterministic Finite Automata (NFA) simulation.
@@ -35,26 +84,33 @@ export class NFASimulation {
     );
   }
 
-  discoverStatesAndRules(states: Set<Set<number>>): [Set<Set<number>>, FARule[]] {
-    const rules = Array.from(states).flatMap((state: Set<number>) => this.rulesFor(state));
-    const moreStates = rules.reduce((acc: Set<Set<number>>, rule: FARule) => 
-      acc.add(rule.follow()), new Set<Set<number>>()
-    );
+  discoverStatesAndRules(states: Set<number>[]): [Set<number>[], FARule[]] {
+    const rules = states.flatMap((state: Set<number>) => this.rulesFor(state));
+    const moreStates = rules.map((rule: FARule) => rule.follow());
 
-    if (new NormalizedSet(moreStates).isSubsetOf(states)) {
+    if (moreStates.every((moreState: Set<number>) => 
+      states.some((state: Set<number>) => state.difference(moreState).size === 0)
+    )) {
       return [states, rules];
     } else {
-      return this.discoverStatesAndRules(new NormalizedSet(states).union(moreStates));
+      return this.discoverStatesAndRules(states.reduce((acc: Set<number>[], state: Set<number>) => {
+        if (!acc.some(existingState => existingState.difference(state).size === 0)) {
+          acc.push(state);
+        }
+        return acc;
+      }, moreStates));
     }
   }
 
-  // toDFADesign() {
-  //   const startState = this.nfaDesign.toNFA().currentStates;
-  //   const [states, rules] = this.discoverStatesAndRules(new Set([startState]));
-  //   const acceptStates = Array.from(states).filter(state => this.nfaDesign.toNFA(state).accepting());
+  toDFADesign(): EquivalenceAdaptedDFADesign {
+    const startState = this.nfaDesign.toNFA().currentStates;
+    const [states, rules] = this.discoverStatesAndRules([startState]);
+    const acceptStates = Array.from(states).filter(state => 
+      this.nfaDesign.toNFA(state).accepting()
+    );
 
-  //   return new DFADesign(startState, acceptStates, new DFARulebook(rules));
-  // }
+    return new EquivalenceAdaptedDFADesign(startState, acceptStates, new DFARulebook(rules));
+  }
 }
 
 console.group("* Part 1: Programs and Machines => 3. The Simplest Computers => Equivalence");
@@ -96,16 +152,16 @@ console.log("----------------------------------------");
 console.log("----------------------------------------");
 const startState = nfaDesign.toNFA().currentStates;
 console.log("Start state: ", startState);
-console.log("Discover states and rules: ", simulation.discoverStatesAndRules(new Set([startState])));
+console.log("Discover states and rules: ", simulation.discoverStatesAndRules([startState]));
 console.log("Accept [1, 2]: ", nfaDesign.toNFA(new Set([1, 2])).accepting());
 console.log("Accept [2, 3]: ", nfaDesign.toNFA(new Set([2, 3])).accepting());
 console.log("----------------------------------------");
 
-// console.log("----------------------------------------");
-// const dfaDesign = simulation.toDFADesign();
-// console.log("DFA accept \"aaa\": ", dfaDesign.accepts("aaa"));
-// console.log("DFA accept \"aab\": ", dfaDesign.accepts("aab"));
-// console.log("DFA accept \"bbbabb\": ", dfaDesign.accepts("bbbabb"));
-// console.log("----------------------------------------");
+console.log("----------------------------------------");
+const dfaDesign = simulation.toDFADesign();
+console.log("DFA accept \"aaa\": ", dfaDesign.accepts("aaa"));
+console.log("DFA accept \"aab\": ", dfaDesign.accepts("aab"));
+console.log("DFA accept \"bbbabb\": ", dfaDesign.accepts("bbbabb"));
+console.log("----------------------------------------");
 
 console.groupEnd();
